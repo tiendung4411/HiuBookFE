@@ -1,0 +1,544 @@
+/* styles/ProfilePage.module.css */
+
+/* General Container */
+.container {
+  padding-top: 120px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e6f0fa, #f0f4f8);
+  font-family: "Roboto", sans-serif;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 1s ease-in-out;
+}
+
+/* Hình nền động với các họa tiết */
+.container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><path d="M25 5L30 15L40 18L32 25L35 35L25 30L15 35L18 25L10 18L20 15Z" fill="rgba(255, 235, 59, 0.2)"/></svg>')
+    repeat;
+  opacity: 0.1;
+  animation: moveBackground 20s linear infinite;
+}
+
+/* Profile Section */
+.profileSection {
+  width: 100%;
+  max-width: 1200px; /* Tăng kích thước container */
+  background: #ffffff;
+  border-radius: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  padding: 40px;
+  border: 4px dashed #90caf9;
+  position: relative;
+  z-index: 1;
+}
+
+/* Profile Header */
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 40px;
+  background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+  border-radius: 20px;
+  margin-bottom: 40px;
+}
+
+/* Profile Avatar */
+.avatarWrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.profileAvatar {
+  width: 180px; /* Tăng kích thước avatar */
+  height: 180px;
+  border-radius: 50%;
+  border: 5px solid #1976d2;
+  box-shadow: 0 0 20px rgba(25, 118, 210, 0.4);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  object-fit: cover; /* Đảm bảo ảnh tròn và không méo */
+}
+
+.profileAvatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(25, 118, 210, 0.6);
+  animation: glow 1.5s infinite alternate;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.avatarWrapper:hover .uploadOverlay {
+  opacity: 1;
+}
+
+/* Upload Message */
+.uploadMessage {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #2e7d32;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  animation: slideInFromRight 0.5s ease-in-out;
+}
+
+/* Profile Info */
+.profileInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profileName {
+  font-size: 42px; /* Tăng kích thước font */
+  color: #1976d2;
+  margin: 0;
+  text-align: center;
+}
+
+.profileGrade {
+  font-size: 28px; /* Tăng kích thước font */
+  color: #555;
+  margin: 0;
+  text-align: center;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.editProfileButton,
+.logoutButton {
+  padding: 15px 40px; /* Tăng kích thước nút */
+  font-size: 20px; /* Tăng kích thước font */
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  animation: pulse 2s infinite;
+}
+
+.editProfileButton {
+  background: #1976d2;
+}
+
+.editProfileButton:hover {
+  background: #42a5f5;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.logoutButton {
+  background: #ef5350;
+}
+
+.logoutButton:hover {
+  background: #f44336;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Profile Stats */
+.profileStats {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.statItem {
+  background: linear-gradient(45deg, #fff3e0, #ffe0b2);
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  min-width: 180px; /* Tăng kích thước */
+  border: 4px dashed #ffca28;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.statItem:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.statNumber {
+  font-size: 40px; /* Tăng kích thước font */
+  font-weight: bold;
+  color: #ff8f00;
+  display: block;
+}
+
+.statLabel {
+  font-size: 20px; /* Tăng kích thước font */
+  color: #555;
+}
+
+/* Profile History */
+.profileHistory {
+  width: 100%;
+}
+
+.historyTitle {
+  font-size: 32px; /* Tăng kích thước font */
+  color: #1976d2;
+  text-align: center;
+  margin-bottom: 25px;
+  font-weight: bold;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 450px; /* Tăng chiều cao */
+  overflow-y: auto;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+  padding: 20px;
+  border-radius: 20px;
+  border: 4px solid #1976d2;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.5s ease-in-out;
+}
+
+.historyItem:hover {
+  background: linear-gradient(45deg, #bbdefb, #e3f2fd);
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  animation: bounce 0.5s ease-in-out;
+}
+
+.historyIcon {
+  font-size: 24px;
+}
+
+.historyText {
+  font-size: 20px; /* Tăng kích thước font */
+  color: #333;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal Content */
+.modalContent {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 700px; /* Tăng kích thước modal */
+  animation: popIn 0.5s ease-in;
+}
+
+.modalTitle {
+  font-size: 32px; /* Tăng kích thước font */
+  color: #1976d2;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.formGroup label {
+  font-size: 20px; /* Tăng kích thước font */
+  color: #1976d2;
+  font-weight: bold;
+}
+
+.textInput {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  border: 2px solid #1976d2;
+  font-size: 20px; /* Tăng kích thước font */
+  transition: all 0.3s ease-in-out;
+}
+
+.textInput:focus {
+  border-color: #42a5f5;
+  box-shadow: 0 0 10px rgba(66, 165, 245, 0.3);
+  outline: none;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.saveButton,
+.cancelButton {
+  padding: 15px 40px; /* Tăng kích thước nút */
+  font-size: 20px; /* Tăng kích thước font */
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  animation: pulse 2s infinite;
+}
+
+.saveButton {
+  background: #1976d2;
+}
+
+.saveButton:hover {
+  background: #42a5f5;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.cancelButton {
+  background: #ef5350;
+}
+
+.cancelButton:hover {
+  background: #f44336;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 20px rgba(25, 118, 210, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(25, 118, 210, 0.8);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-15px);
+  }
+  60% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes moveBackground {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100px 100px;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profileHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profileAvatar {
+    width: 140px;
+    height: 140px;
+  }
+
+  .profileStats {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .statItem {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileAvatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profileName {
+    font-size: 32px;
+  }
+
+  .profileGrade {
+    font-size: 24px;
+  }
+
+  .editProfileButton,
+  .logoutButton {
+    padding: 12px 30px;
+    font-size: 18px;
+  }
+
+  .statNumber {
+    font-size: 36px;
+  }
+
+  .statLabel {
+    font-size: 18px;
+  }
+
+  .historyTitle {
+    font-size: 28px;
+  }
+
+  .historyText {
+    font-size: 18px;
+  }
+
+  .historyIcon {
+    font-size: 22px;
+  }
+
+  .modalContent {
+    padding: 30px;
+  }
+
+  .modalTitle {
+    font-size: 28px;
+  }
+
+  .formGroup label {
+    font-size: 18px;
+  }
+
+  .textInput {
+    font-size: 18px;
+  }
+
+  .saveButton,
+  .cancelButton {
+    padding: 12px 30px;
+    font-size: 18px;
+  }
+}

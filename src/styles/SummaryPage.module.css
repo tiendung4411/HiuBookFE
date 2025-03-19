@@ -1,0 +1,1196 @@
+/* General Container */
+.container {
+  padding-top: 80px;
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    #e0f7fa,
+    #b2ebf2
+  ); /* Gradient pastel nhẹ nhàng */
+  font-family: "Comic Sans MS", sans-serif;
+  color: #333;
+  contain: layout;
+  position: relative; /* Để hỗ trợ highlight pointer */
+}
+
+/* Main Content */
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 20px;
+}
+
+/* Header Container */
+.headerContainer {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 1400px;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Illustration Section (Ẩn) */
+.illustration {
+  display: none; /* Ẩn hình ảnh Cá heo và Mèo */
+}
+
+/* Option Column (chứa chọn kiểu tóm tắt và lớp học) */
+.optionColumn {
+  width: 100%;
+  background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px dashed #4fc3f7;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.optionSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.optionTitle {
+  font-size: 28px; /* Tăng kích thước chữ tiêu đề */
+  color: #0288d1;
+  margin-bottom: 10px;
+  text-align: center;
+  animation: bounce 1s infinite;
+}
+
+.optionGroup {
+  display: flex;
+  flex-direction: row; /* Nằm ngang */
+  gap: 35px; /* Tăng khoảng cách giữa các nút */
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* OptionButton (Giảm kích thước và cập nhật hiệu ứng) */
+.optionButton {
+  background: linear-gradient(
+    45deg,
+    #81d4fa,
+    #b3e5fc
+  ); /* Màu nền mặc định nhẹ nhàng */
+  border: 3px solid #0288d1; /* Tăng độ dày viền */
+  padding: 25px 50px; /* Giảm padding để nút nhỏ lại */
+  border-radius: 35px; /* Giảm bán kính bo góc */
+  font-size: 20px; /* Giảm kích thước font */
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Giảm độ bóng */
+  display: flex;
+  align-items: center;
+  color: #333;
+  min-width: 180px; /* Giảm chiều rộng tối thiểu */
+  text-align: center;
+  justify-content: center;
+  height: 80px; /* Giảm chiều cao */
+}
+
+.optionButton:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176); /* Màu hover sáng hơn */
+  transform: scale(1.05); /* Giảm độ phóng to khi hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+  animation: blink 0.5s infinite;
+}
+
+.optionButton.active {
+  background: linear-gradient(
+    45deg,
+    #ff6f61,
+    #ff8a80
+  ); /* Màu nổi bật khi được chọn */
+  border: 4px solid #ffd700; /* Viền vàng nổi bật */
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8),
+    /* Hiệu ứng phát sáng vàng */ 0 0 30px rgba(255, 111, 97, 0.7),
+    /* Hiệu ứng phát sáng đỏ cam */ 0 6px 12px rgba(0, 0, 0, 0.25); /* Giữ bóng đổ */
+  color: #fff; /* Chữ trắng để nổi bật */
+  font-weight: bold; /* Làm đậm chữ */
+  transform: scale(1.05); /* Phóng to nhẹ khi active */
+  animation: glow 1.2s infinite alternate; /* Hiệu ứng nhấp nháy */
+}
+
+.optionButton[data-tooltip]:hover:after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0288d1;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+  margin-bottom: 5px;
+  animation: popUp 0.5s ease-out;
+}
+
+/* Specific Colors for Buttons (Cập nhật màu sắc) */
+.methodExtract {
+  background: linear-gradient(
+    45deg,
+    #4fc3f7,
+    #81d4fa
+  ); /* Xanh nước biển nhẹ nhàng */
+}
+
+.methodParaphrase {
+  background: linear-gradient(45deg, #80deea, #b2ebf2); /* Xanh lam nhạt hơn */
+}
+
+.grade1 {
+  background: linear-gradient(45deg, #64b5f6, #90caf9); /* Xanh dương */
+}
+
+.grade2 {
+  background: linear-gradient(45deg, #fff176, #ffee58); /* Vàng nhạt */
+}
+
+.grade3 {
+  background: linear-gradient(45deg, #ffab91, #ffccbc); /* Cam hồng */
+}
+
+.grade4 {
+  background: linear-gradient(45deg, #42a5f5, #90caf9); /* Xanh dương đậm hơn */
+}
+
+.grade5 {
+  background: linear-gradient(45deg, #81c784, #a5d6a7); /* Xanh lá nhạt */
+}
+
+/* Input and Result Section */
+.inputResultSection {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Input and Result Container */
+.inputResultContainer {
+  display: flex;
+  width: 100%;
+  gap: 20px;
+  flex: 1;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+/* Text Input Container */
+.textInputContainer {
+  flex: 1;
+  background: linear-gradient(135deg, #ffffff, #e0f7fa);
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px dashed #4fc3f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  position: relative;
+}
+
+.inputWrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.textInputArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  color: #0288d1;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.textArea {
+  width: 100%;
+  height: 200px;
+  border-radius: 15px;
+  padding: 15px;
+  font-size: 16px;
+  border: 2px solid #0288d1;
+  background: white;
+  resize: none;
+  transition: all 0.3s ease-in-out;
+}
+
+.textArea:focus {
+  border-color: #ffeb3b;
+  box-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+  outline: none;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 20px; /* Tăng khoảng cách giữa các nút */
+  margin-top: 10px; /* Đặt phía dưới textArea */
+  width: 100%;
+  justify-content: center;
+}
+
+.buttonGroup {
+  display: none; /* Ẩn buttonGroup vì buttonRow đã xử lý */
+}
+
+/* Submit Button (Tăng kích thước và thêm animation) */
+.submitButton {
+  padding: 20px 40px; /* Tăng padding để nút dài hơn */
+  font-size: 20px; /* Tăng kích thước font */
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(45deg, #0288d1, #4fc3f7);
+  border-radius: 30px; /* Tăng bán kính bo góc */
+  border: none;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  animation: pulse 2s infinite; /* Thêm hiệu ứng nhấp nháy */
+  height: 70px; /* Tăng chiều cao */
+  min-width: 180px; /* Tăng chiều rộng tối thiểu */
+}
+
+.submitButton:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.submitButton:disabled {
+  background: #b0c4de;
+  cursor: not-allowed;
+  animation: none; /* Tắt animation khi disabled */
+}
+
+/* Upload Button (Tăng kích thước và thêm animation) */
+.uploadButton {
+  padding: 20px 40px; /* Tăng padding để nút dài hơn */
+  font-size: 20px; /* Tăng kích thước font */
+  color: white;
+  background: linear-gradient(45deg, #81d4fa, #b3e5fc);
+  border-radius: 30px; /* Tăng bán kính bo góc */
+  border: none;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  animation: pulse 2s infinite; /* Thêm hiệu ứng nhấp nháy */
+  height: 70px; /* Tăng chiều cao */
+  min-width: 180px; /* Tăng chiều rộng tối thiểu */
+}
+
+.uploadButton:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* File Input (Hidden) */
+.fileInput {
+  display: none;
+}
+
+/* Reset Button (Tăng kích thước và thêm animation) */
+.resetButton {
+  padding: 20px 40px; /* Tăng padding để nút dài hơn */
+  font-size: 20px; /* Tăng kích thước font */
+  color: #0288d1;
+  background: linear-gradient(45deg, #ffeb3b, #fff9c4);
+  border-radius: 30px; /* Tăng bán kính bo góc */
+  border: none;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  animation: pulse 2s infinite; /* Thêm hiệu ứng nhấp nháy */
+  height: 70px; /* Tăng chiều cao */
+  min-width: 180px; /* Tăng chiều rộng tối thiểu */
+}
+
+.resetButton:hover {
+  background: linear-gradient(45deg, #a5d6a7, #c8e6c9);
+  color: white;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Generate Image Button */
+.generateImageButton {
+  padding: 8px 15px;
+  font-size: 14px;
+  color: white;
+  background: linear-gradient(45deg, #4fc3f7, #81d4fa);
+  border-radius: 20px;
+  border: none;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+}
+
+.generateImageButton:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Result Section */
+.resultContainer {
+  flex: 1;
+  background: linear-gradient(135deg, #ffffff, #e0f7fa);
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px dashed #4fc3f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.resultBox {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  border: 2px solid #0288d1;
+  min-height: 200px;
+  width: 100%;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.resultText {
+  font-size: 16px;
+  color: #333;
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* Tab Buttons for Current and History */
+.tabButtons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.tabButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #0288d1;
+  background: linear-gradient(45deg, #b3e5fc, #e0f7fa);
+  border: 2px solid #0288d1;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tabButton:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  transform: scale(1.05);
+}
+
+.tabButton.activeTab {
+  background: linear-gradient(45deg, #ff6f61, #ff8a80);
+  color: #fff;
+  border-color: #ffd700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  animation: glow 1.2s infinite alternate;
+}
+
+/* Summary Options Container */
+.summaryOptionsContainer {
+  margin-top: 20px;
+  width: 100%;
+  background: linear-gradient(135deg, #ffffff, #e0f7fa);
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px dashed #4fc3f7;
+  max-height: 400px; /* Giới hạn chiều cao */
+  overflow-y: auto; /* Thêm thanh cuộn dọc */
+}
+
+/* Summary Options */
+.summaryOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+/* Summary Option Card */
+.summaryOption {
+  background: linear-gradient(45deg, #b3e5fc, #e0f7fa);
+  border: 2px solid #0288d1;
+  border-radius: 15px;
+  padding: 15px;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-width: 100%; /* Đảm bảo không vượt quá container */
+}
+
+.summaryOption:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.summaryOption.selected {
+  background: linear-gradient(45deg, #ff6f61, #ff8a80);
+  border: 3px solid #ffd700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  color: #fff;
+  font-weight: bold;
+  transform: scale(1.05);
+  animation: glow 1.2s infinite alternate;
+}
+
+.summaryOption:nth-child(1) {
+  background: linear-gradient(45deg, #fff176, #ffee58);
+}
+
+.summaryOption:nth-child(1) .summaryOptionTitle::before {
+  content: "🌟 ";
+}
+
+.summaryOption:nth-child(2) {
+  background: linear-gradient(45deg, #81d4fa, #b3e5fc);
+}
+
+.summaryOption:nth-child(2) .summaryOptionTitle::before {
+  content: "📖 ";
+}
+
+.summaryOption:nth-child(3) {
+  background: linear-gradient(45deg, #ffab91, #ffccbc);
+}
+
+.summaryOption:nth-child(3) .summaryOptionTitle::before {
+  content: "📜 ";
+}
+
+.summaryOptionTitle {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0288d1;
+  margin-bottom: 10px;
+  text-align: center;
+  white-space: nowrap; /* Ngăn tiêu đề bị ngắt dòng */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Thêm dấu ... nếu quá dài */
+}
+
+.summaryOption.selected .summaryOptionTitle {
+  color: #fff;
+}
+
+.summaryOptionContent {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  text-align: left;
+  max-height: 100px; /* Giới hạn chiều cao nội dung */
+  overflow-y: auto; /* Thêm thanh cuộn nếu nội dung dài */
+}
+
+.summaryOption.selected .summaryOptionContent {
+  color: #fff;
+}
+
+.selectSummaryButton {
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(45deg, #2e7d32, #76ff03);
+  border-radius: 15px;
+  border: none;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.selectSummaryButton:hover {
+  background: linear-gradient(45deg, #76ff03, #2e7d32);
+  transform: scale(1.05);
+}
+
+/* History Container */
+.historyContainer {
+  margin-top: 10px;
+  width: 100%;
+  max-height: 400px; /* Giới hạn chiều cao */
+  overflow-y: auto; /* Thêm thanh cuộn dọc */
+}
+
+.historyItem {
+  background: linear-gradient(135deg, #ffffff, #e0f7fa);
+  padding: 10px;
+  border-radius: 15px;
+  border: 2px dashed #4fc3f7;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.historyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.historyTimestamp {
+  font-size: 14px;
+  color: #0288d1;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}
+
+.historySummaryOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.deleteHistoryButton {
+  background: linear-gradient(45deg, #ff7043, #ff9800);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.deleteHistoryButton:hover {
+  background: linear-gradient(45deg, #ff9800, #ff7043);
+  transform: scale(1.1);
+}
+
+/* Evaluation Section */
+.evaluationSection {
+  width: 100%;
+  background: linear-gradient(135deg, #ffffff, #e0f7fa);
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px dashed #4fc3f7;
+  margin-top: 20px;
+}
+
+.evaluationTitle {
+  font-size: 24px;
+  color: #0288d1;
+  text-align: center;
+  margin-bottom: 20px;
+  animation: bounce 1s infinite;
+}
+
+.evaluationContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.evaluationItem {
+  flex: 1;
+  min-width: 320px; /* Tăng chiều rộng tối thiểu để chứa văn bản */
+  height: 320px; /* Tăng chiều cao để chứa nội dung */
+  background: #e0f7fa;
+  border: 2px dashed #0288d1;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #0288d1;
+  font-size: 16px;
+  text-align: center;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out;
+}
+
+.evaluationItem.expanded {
+  flex: 4;
+  min-width: 620px; /* Tăng chiều rộng khi mở rộng */
+  height: 520px; /* Tăng chiều cao khi mở rộng */
+  z-index: 10;
+  border: 3px solid #ffeb3b;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.evaluationItem p {
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  white-space: normal; /* Cho phép ngắt dòng tự động */
+  word-wrap: break-word; /* Ngắt chữ nếu quá dài */
+}
+
+.evaluationItem canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Guide Section */
+.guideSection {
+  width: 100%;
+  max-width: 1400px;
+  background: linear-gradient(
+    135deg,
+    #b2ebf2,
+    #d1c4e9
+  ); /* Gradient từ xanh lam nhạt đến tím nhạt */
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+    /* Hiệu ứng phát sáng trắng */ 0 0 30px rgba(255, 235, 59, 0.5); /* Hiệu ứng phát sáng vàng nhạt */
+  border: 2px dashed #4fc3f7; /* Viền xanh nước biển */
+  margin-bottom: 20px;
+  animation: glow 2s infinite alternate; /* Hiệu ứng phát sáng nhấp nháy */
+}
+
+.guideTitle {
+  font-size: 24px;
+  color: #0288d1;
+  text-align: center;
+  margin-bottom: 15px;
+  animation: bounce 1s infinite;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Hiệu ứng phát sáng cho tiêu đề */
+}
+
+.guideContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guideItem {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 10px;
+  border-radius: 15px;
+  border: 2px solid #0288d1;
+  transition: all 0.3s ease-in-out;
+}
+
+.guideItem:hover {
+  transform: scale(1.03); /* Phóng to nhẹ khi hover */
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8),
+    /* Hiệu ứng phát sáng trắng */ 0 0 20px rgba(255, 235, 59, 0.5); /* Hiệu ứng phát sáng vàng nhạt */
+}
+
+.guideIcon {
+  font-size: 24px;
+  margin-right: 10px;
+  animation: wobble 2s infinite; /* Hiệu ứng chuyển động cho icon */
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Hiệu ứng phát sáng cho icon */
+}
+
+.guideItem p {
+  font-size: 16px;
+  color: #333;
+  margin: 0;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3); /* Hiệu ứng phát sáng nhẹ cho văn bản */
+}
+
+/* Hiệu ứng phát sáng nhấp nháy */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+      0 0 30px rgba(255, 235, 59, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 1),
+      0 0 40px rgba(255, 235, 59, 0.7);
+  }
+}
+
+/* Hiệu ứng wobble cho icon */
+@keyframes wobble {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(15deg);
+  }
+  75% {
+    transform: rotate(-15deg);
+  }
+}
+
+/* Hiệu ứng pulse cho các nút bên dưới (Tóm tắt nào!, Tải PDF, Xóa hết) */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes popUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Hướng dẫn từng bước */
+.guideStepsContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Nền mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.guideStep {
+  background: linear-gradient(135deg, #b2ebf2, #d1c4e9);
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 255, 255, 0.8),
+    0 0 30px rgba(255, 235, 59, 0.5);
+  border: 2px dashed #4fc3f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  animation: popIn 0.5s ease-in;
+}
+
+.guideStepContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.guideStepCharacter {
+  width: clamp(80px, 15vw, 120px);
+  height: clamp(80px, 15vw, 120px);
+  animation: bounce 1s infinite;
+}
+
+.guideStepMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  color: #0288d1;
+  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.5);
+  font-weight: bold;
+  max-width: 90%;
+}
+
+.guideStepIcon {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  animation: wobble 1.5s infinite;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.guideStepButtons {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.skipButton,
+.nextButton {
+  padding: 12px 25px;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  animation: bounceIn 0.5s ease-out;
+}
+
+.skipButton {
+  background: linear-gradient(45deg, #ff9800, #ff7043);
+}
+
+.skipButton:hover {
+  background: linear-gradient(45deg, #ff7043, #ff9800);
+  transform: scale(1.05);
+}
+
+.nextButton {
+  background: linear-gradient(45deg, #2e7d32, #76ff03);
+}
+
+.nextButton:hover {
+  background: linear-gradient(45deg, #76ff03, #2e7d32);
+  transform: scale(1.05);
+}
+
+/* Nút "Xem lại hướng dẫn" */
+.showGuideButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(45deg, #81d4fa, #b3e5fc);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 40px;
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+.showGuideButton:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  transform: scale(1.1) rotate(360deg);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .headerContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .optionColumn {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .inputResultSection {
+    width: 100%;
+  }
+
+  .inputResultContainer {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .buttonRow {
+    flex-direction: column;
+    gap: 20px; /* Tăng khoảng cách trên mobile */
+  }
+
+  .inputWrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .textArea,
+  .resultBox {
+    height: 200px;
+  }
+
+  .optionGroup {
+    flex-direction: column;
+    gap: 25px; /* Giảm khoảng cách trên mobile */
+  }
+
+  .evaluationSection {
+    width: 100%;
+  }
+
+  .evaluationContainer {
+    flex-direction: column;
+  }
+
+  .evaluationItem {
+    min-width: 100%;
+    height: 250px;
+  }
+
+  .evaluationItem.expanded {
+    min-width: 100%;
+    height: 350px;
+  }
+
+  /* Responsive cho Guide Section */
+  .guideSection {
+    width: 100%;
+  }
+
+  .guideItem {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .guideIcon {
+    margin-right: 0;
+    margin-bottom: 5px;
+  }
+
+  .guideStep {
+    padding: 15px;
+    max-width: 90%;
+  }
+
+  .guideStepMessage {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+  }
+
+  .highlightPointer {
+    width: 15px;
+    height: 15px;
+  }
+
+  .tabButtons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .tabButton {
+    width: 100%;
+  }
+
+  .summaryOptionsContainer {
+    padding: 10px;
+    max-height: 300px; /* Giảm chiều cao trên mobile */
+  }
+
+  .summaryOptionTitle {
+    font-size: 14px;
+  }
+
+  .summaryOptionContent {
+    font-size: 12px;
+  }
+
+  .selectSummaryButton {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .historyContainer {
+    padding: 5px;
+    max-height: 300px; /* Giảm chiều cao trên mobile */
+  }
+
+  .historyTimestamp {
+    font-size: 12px;
+  }
+
+  .deleteHistoryButton {
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .textInputContainer,
+  .resultContainer {
+    width: 100%;
+  }
+
+  .textArea,
+  .resultBox {
+    height: 150px;
+  }
+
+  .submitButton,
+  .resetButton,
+  .uploadButton {
+    font-size: 18px; /* Tăng kích thước font trên mobile */
+    padding: 15px 35px; /* Tăng padding trên mobile */
+    min-width: 160px; /* Điều chỉnh chiều rộng */
+    height: 60px; /* Điều chỉnh chiều cao */
+  }
+
+  .generateImageButton {
+    font-size: 14px;
+    padding: 8px 15px;
+  }
+
+  .optionButton {
+    font-size: 18px; /* Giảm kích thước font trên mobile */
+    padding: 20px 40px; /* Giảm padding trên mobile */
+    min-width: 160px; /* Giảm chiều rộng */
+    height: 70px; /* Giảm chiều cao */
+  }
+
+  .sectionTitle {
+    font-size: 16px;
+  }
+
+  .resultText {
+    font-size: 14px;
+  }
+
+  .optionTitle {
+    font-size: 24px; /* Tăng kích thước tiêu đề trên mobile */
+  }
+
+  .evaluationItem {
+    height: 200px;
+  }
+
+  .evaluationItem.expanded {
+    height: 300px;
+  }
+
+  /* Responsive cho Guide Section */
+  .guideTitle {
+    font-size: 20px;
+  }
+
+  .guideItem p {
+    font-size: 14px;
+  }
+
+  .guideIcon {
+    font-size: 20px;
+  }
+
+  .guideStep {
+    padding: 10px;
+  }
+
+  .guideStepCharacter {
+    width: clamp(60px, 12vw, 80px);
+    height: clamp(60px, 12vw, 80px);
+  }
+
+  .guideStepMessage {
+    font-size: clamp(0.9rem, 2vw, 1rem);
+  }
+
+  .skipButton,
+  .nextButton {
+    padding: 8px 15px;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+  }
+
+  .showGuideButton {
+    bottom: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+    line-height: 30px;
+  }
+
+  .tabButton {
+    font-size: 14px;
+    padding: 8px 15px;
+  }
+
+  .summaryOptionTitle {
+    font-size: 12px;
+  }
+
+  .summaryOptionContent {
+    font-size: 10px;
+  }
+
+  .selectSummaryButton {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .historyTimestamp {
+    font-size: 10px;
+  }
+
+  .deleteHistoryButton {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+}

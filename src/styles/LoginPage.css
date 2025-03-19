@@ -1,0 +1,203 @@
+/* LoginPage.css */
+* {
+    box-sizing: border-box;
+    /* Add at top of CSS */
+}
+
+/* General Container */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    /* Changed to min-height for better responsiveness */
+    background: linear-gradient(135deg, #057be3, #a2d2ff);
+    padding: 20px;
+}
+
+/* Header Section */
+.login-header {
+    text-align: center;
+    color: #023047;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    /* Removed vertical gap */
+    margin-bottom: 1.5rem;
+    /* Added bottom margin instead of gap */
+}
+
+/* Logo Styling */
+.login-logo {
+    width: 180px;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    margin-bottom: 0.5rem;
+    /* Controlled spacing below logo */
+}
+
+.login-logo.visible {
+    opacity: 1;
+}
+
+/* Header Text */
+.fade-in-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+    opacity: 0;
+    margin: 0;
+    /* Remove default margin */
+    transition: opacity 1s ease-in-out;
+}
+
+.fade-in-text.visible {
+    opacity: 1;
+}
+
+/* Subtitle Text */
+.static-text {
+    font-size: 1.25rem;
+    /* Reduced from 2rem */
+    font-family: "Playwrite IT Moderna", cursive;
+    font-style: italic;
+    opacity: 0;
+    margin: 0;
+    /* Remove default margin */
+    transition: opacity 1s ease-in-out;
+    max-width: 100%;
+    /* Prevent text overflow */
+}
+
+.static-text.visible {
+    opacity: 1;
+}
+
+/* Login Form Styling */
+.login-form {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 400px;
+    /* Limit form width */
+}
+
+.login-form label {
+    color: #023047;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.input-field {
+    width: 100%;
+    /* Changed from 95% */
+    padding: 12px;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    /* Add this */
+}
+
+
+.input-field::placeholder {
+    color: #555555;
+}
+
+/* Button Styling */
+.login-button,
+.register-button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+.login-button {
+    background-color: #0077b6;
+    color: white;
+}
+
+.register-button {
+    background-color: #f1f1f1;
+    color: #023047;
+    margin-top: 1rem;
+}
+
+.mobile-text {
+    display: none;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .login-header h1 {
+        font-size: 2rem;
+    }
+
+    .static-text {
+        display: none;
+        /* Hide on mobile */
+    }
+
+    .login-logo {
+        width: 140px;
+        /* Smaller logo on mobile */
+    }
+
+    .login-form {
+        padding: 20px;
+    }
+
+    .desktop-text {
+        display: none;
+    }
+
+    .mobile-text {
+        display: inline;
+    }
+}
+
+/* Hover Effects */
+.login-button:hover,
+.register-button:hover {
+    opacity: 0.9;
+}
+
+/* Password Container */
+.password-container {
+    position: relative;
+    width: 100%;
+    /* Changed from 95% */
+}
+
+.toggle-password-icon {
+    position: absolute;
+    top: 35%;
+    right: 5px;
+    /* Adjusted from -25px */
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555555;
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+}
+
+.toggle-password-icon:hover {
+    color: #023047;
+}
+
+/* Adjust input padding to prevent text overlap */
+.input-field[type="password"],
+.input-field[type="text"] {
+    padding-right: 40px;
+}

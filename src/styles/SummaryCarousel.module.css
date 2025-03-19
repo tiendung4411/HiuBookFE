@@ -1,0 +1,120 @@
+/* SummaryCarousel.module.css */
+
+.summarySection {
+    padding: 3rem 5%;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.summarySection h2 {
+    color: #023047;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    padding-left: 2rem;
+}
+
+.carouselContainer {
+    position: relative;
+    width: 100%;
+}
+
+.summaryCarousel {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 1rem 2rem;
+    scroll-behavior: smooth;
+}
+
+.summaryCarousel::-webkit-scrollbar {
+    display: none;
+}
+
+/* Summary Cards */
+.summaryCard {
+    flex: 0 0 300px;
+    height: 200px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    background: white;
+}
+
+.summaryCard:hover {
+    transform: translateY(-5px);
+}
+
+.summaryImage {
+    width: 100%;
+    height: 70%;
+    object-fit: cover;
+    border-bottom: 2px solid #0077b6;
+}
+
+.summaryTitle {
+    padding: 1.5rem;
+    color: #023047;
+    font-size: 1.2rem;
+    text-align: center;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Navigation Arrows */
+.scrollButton {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.scrollButton:hover {
+    background: #0077b6;
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.scrollButton.right {
+    right: -20px;
+}
+
+.scrollButton:not(.right) {
+    left: -20px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .summarySection {
+        padding: 2rem 1rem;
+    }
+
+    .summarySection h2 {
+        padding-left: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .summaryCarousel {
+        padding: 1rem;
+    }
+
+    .summaryCard {
+        flex: 0 0 250px;
+        height: 350px;
+    }
+
+    .scrollButton {
+        display: none;
+    }
+}

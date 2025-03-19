@@ -1,0 +1,47 @@
+.header {
+  background-color: #d9edf7; /* Màu xanh nhạt giống hình mẫu */
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  width: 40px; /* Điều chỉnh kích thước logo */
+  height: auto;
+  margin-right: 10px;
+}
+
+.navButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  background-color: #3498db; /* Màu xanh đậm cho nút */
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.navButton:hover {
+  background-color: #2980b9; /* Màu xanh đậm hơn khi hover */
+}
+
+.icon {
+  margin-right: 5px;
+}

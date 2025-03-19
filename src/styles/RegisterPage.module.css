@@ -1,0 +1,180 @@
+/* General Styles */
+* {
+    box-sizing: border-box;
+}
+
+/* General Container */
+.registerContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #057be3, #a2d2ff);
+    padding: 20px;
+}
+
+/* Register Header */
+.registerHeader {
+    text-align: center;
+    color: #023047;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 1.5rem;
+}
+
+/* Register Logo */
+.registerLogo {
+    width: 180px;
+    margin-bottom: 1rem;
+}
+
+/* Register Title */
+.registerTitle {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* Register Subtitle */
+.registerSubtitle {
+    font-size: 1.25rem;
+    font-family: "Playwrite IT Moderna", cursive;
+    font-style: italic;
+}
+
+/* Role Container */
+.roleContainer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.roleSelector {
+    display: flex;
+    gap: 1rem;
+    background: #0077b6;
+    padding: 0.5rem;
+    width: 250px;
+    border-radius: 30px;
+}
+
+.roleButton {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 20px;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.roleButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.activeRole {
+    background-color: #005f99;
+    color: white;
+}
+
+/* Register Form Styling */
+.registerForm {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    transition: height 0.3s ease;
+}
+
+.registerForm label {
+    color: #023047;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.input-field {
+    width: calc(100% - 20px);
+    padding: 12px;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.input-field::placeholder {
+    color: #555555;
+}
+
+/* Submit Button Styling */
+.registerButton {
+    width: calc(100% - 20px);
+    max-width: 400px;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.registerButton:hover {
+    opacity: 0.9;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .registerHeader h1 {
+        font-size: 2rem;
+    }
+
+    .registerLogo {
+        width: 140px;
+    }
+
+    .registerForm {
+        padding: 20px;
+    }
+}
+
+/* Hover Effects */
+.registerButton:hover {
+    opacity: 0.9;
+}
+
+/* Input Group */
+.inputGroup {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.inputFieldContainer {
+    width: 49%;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.input-field::placeholder {
+    color: #555555;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .inputGroup {
+        flex-direction: column;
+    }
+
+    .inputFieldContainer {
+        width: 100%;
+    }
+}

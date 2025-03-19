@@ -1,0 +1,28 @@
+.statCard {
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  transition: transform 0.3s;
+  position: relative;
+  background-color: #3498db;
+}
+
+.statCard:hover {
+  transform: translateY(-5px);
+}
+
+.icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.statValue {
+  font-size: 1.8rem;
+  margin: 10px 0;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 0;
+}
