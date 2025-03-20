@@ -9,7 +9,7 @@ import AdminDashboard from "./Admin/pages/AdminDashboard.js"; // Bỏ thư mục
 import UserManagement from "./Admin/pages/UserManagement.js"; // Thêm .js
 import SummaryManagement from "./Admin/pages/SummaryManagement.js"; // Đã đúng, thêm .js
 import StoryManagement from "./Admin/pages/StoryManagement.js"; // Bỏ thư mục Story/
-
+import ProfilePage from "./pages/ProfilePage";
 // Tách biệt các route không phải admin
 const nonAdminRoutes = [
   { path: "/", element: <HomeScreen /> },
@@ -18,7 +18,8 @@ const nonAdminRoutes = [
   { path: "/summary", element: <DualViewLayout /> },
   { path: "/register", element: <RegisterPage /> },
   { path: "/reading-list/:classLevel", element: <ReadingListPage /> },
-  { path: "/story/:id", element: <DualViewLayout /> }
+  { path: "/story/:id", element: <DualViewLayout /> },
+  {path: "/profile", element: <ProfilePage />}  
 ];
 
 // Tách biệt các route dành cho admin

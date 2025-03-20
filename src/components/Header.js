@@ -15,9 +15,7 @@ const Header = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-      console.log("User data loaded from localStorage:", storedUser);
       const parsedUser = JSON.parse(storedUser);
-      console.log("userRole: ", parsedUser.role);
     }
 
     const handleScroll = () => {
@@ -139,13 +137,17 @@ const Header = () => {
             />
           </svg>
           Tóm tắt
-        </Link>
+        </Link >
         {user ? (
           <>
-            <span className={styles.navLink}>Xin chào, {user.username}!</span>
-            <button onClick={handleLogout} className={styles.navLink}>
+                  <Link to="/profile" className={styles.navLink}>
+  Xin chào, {user.username}!
+</Link>
+
+              <button onClick={handleLogout} className={styles.navLink}>
               Đăng xuất
-            </button>
+              </button>
+           
           </>
         ) : (
           <Link to="/login" className={styles.navLink}>
@@ -292,8 +294,9 @@ const Header = () => {
         </Link>
         {user ? (
           <>
-            <span className={styles.navLink}>Xin chào, {user.username}!</span>
-            <button onClick={handleLogout} className={styles.navLink}>
+  <Link to="/profile" className={styles.navLink}>
+  Xin chào, {user.username}!
+</Link>            <button onClick={handleLogout} className={styles.navLink}>
               Đăng xuất
             </button>
           </>

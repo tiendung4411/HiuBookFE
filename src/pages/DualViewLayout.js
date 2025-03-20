@@ -26,6 +26,7 @@ const pageVariants = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.5 } }
 };
 
+
 const DualViewLayout = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -46,6 +47,9 @@ const DualViewLayout = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [voices, setVoices] = useState([]); // Danh sách giọng đọc
   const [selectedVoiceName, setSelectedVoiceName] = useState("Giọng Nữ"); // Tên giọng được chọn
+  // Get userId from localStorage
+  const storedUser = localStorage.getItem("user");
+  const userId = storedUser ? JSON.parse(storedUser).userId : null;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -100,21 +104,25 @@ const DualViewLayout = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await getSummaryById(id); // Use the getSummaryById API function
-        setStoryData({
-          title: response.data.title,
-          text: response.data.content, // Assuming you get 'content' as the full text
-          summaryExtract: response.data.summaryContent, // Assuming you get the summaryExtract from the API
-          summaryParaphrase: response.data.summaryContent, // Assuming you get the paraphrase summary from the API
-        });
+        if (userId) {
+          const response = await getSummaryById(id, userId); // Pass userId here
+          setStoryData({
+            title: response.data.title,
+            text: response.data.content,
+            summaryExtract: response.data.summaryContent,
+            summaryParaphrase: response.data.summaryContent
+          });
+        } else {
+          setError("User not found.");
+        }
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error);
-        setError("Không thể tải truyện. Hãy thử lại nhé!");
+        console.error("Error fetching story:", error);
+        setError("Failed to load story. Please try again.");
       }
       setLoading(false);
     };
     fetchStory();
-  }, [id]);
+  }, [id, userId]);
 
   useEffect(() => {
     localStorage.setItem(`progress_${id}`, progress);

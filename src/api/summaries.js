@@ -24,11 +24,11 @@ export const getTop10Summaries = () => {
 export const getSummariesByContributor = (userId) => {
   return api.get(`/summaries/contributor/${userId}`);
 };
-
-//get by id
-export const getSummaryById = (id) => {
-  return api.get(`/summaries/${id}`);
+// Get summary by ID with userId
+export const getSummaryById = (id, userId) => {
+  return api.get(`/summaries/${id}?userId=${userId}`);
 };
+
 
 // Create a new summary
 export const createSummary = (summaryData) => {
