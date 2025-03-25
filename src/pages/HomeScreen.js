@@ -19,7 +19,6 @@ import {
   FaArrowRight,
   FaTimes
 } from "react-icons/fa";
-import { getTop10Summaries } from "../api/summaries";  // Import the new function
 
 // Import ảnh minh họa cho từng lớp
 import class1Mascot from "../assets/images/kids-playing.png";
@@ -197,7 +196,7 @@ const HomeScreen = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [showGuideSteps, setShowGuideSteps] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
-  const [topSummaries, setTopSummaries] = useState([]); 
+
   // Kiểm tra xem hướng dẫn đã được hiển thị chưa
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem("hasSeenGuide");
@@ -281,19 +280,7 @@ const HomeScreen = () => {
     setShowGuideSteps(false);
     localStorage.setItem("hasSeenGuide", "true");
   };
-  useEffect(() => {
-    // Fetch top 10 summaries when the component mounts
-    const fetchTopSummaries = async () => {
-      try {
-        const response = await getTop10Summaries();
-        setTopSummaries(response.data);  // Store top 10 summaries in state
-      } catch (error) {
-        console.error("Error fetching top 10 summaries:", error);
-      }
-    };
 
-    fetchTopSummaries();
-  }, []);
   return (
     <div
       className={`${styles.container} ${isDarkTheme ? styles.darkTheme : ""}`}
@@ -461,32 +448,7 @@ const HomeScreen = () => {
           <FaStar className={styles.sectionIcon} /> Bài đọc nổi bật
         </h2>
         <section className={styles.carouselSection}>
-          {/* Display Top 10 Summaries */}
-          <div className={styles.topSummariesList}>
-            {topSummaries.length > 0 ? (
-              topSummaries.map((summary) => (
-                <div key={summary.summaryId} className={styles.topSummaryItem}>
-                  <img
-                    src={summary.imageUrl || "https://www.vocw.edu.vn/wp-content/uploads/2021/01/Ve-tranh-minh-hoa-truyen-co-tich-lop-8.jpg"}
-                    alt={summary.title}
-                    className={styles.topSummaryImage}
-                  />
-                  <div className={styles.topSummaryTitle}>
-                    <h3>{summary.title}</h3>
-                    <p>{summary.summaryContent}</p>
-                    <button
-                      onClick={() => navigate(`/story/${summary.summaryId}`)}
-                      className={styles.readButton}
-                    >
-                      Đọc ngay
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p>Không có bài viết nổi bật nào hiện tại!</p>
-            )}
-          </div>
+          <SummaryCarousel title="" items={sampleSummaries} />
         </section>
 
         <h2 className={styles.sectionTitle}>

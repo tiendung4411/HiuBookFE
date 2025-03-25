@@ -6,19 +6,21 @@ import "slick-carousel/slick/slick.css";
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick-theme.css";
 import { getReadHistoryByUser } from '../api/readHistory';
+
 const ProfilePage = () => {
   const [user, setUser] = useState({
     id: null,
     name: "Bé Mèo Lười",
     grade: "Lớp 3A",
     avatar: "https://via.placeholder.com/150",
-    summaries: 15,
+    summaries: 15
   });
 
   const [history, setHistory] = useState([
     { id: 1, text: 'Tóm tắt "Cây khế" - 18/03/2025' },
-    { id: 2, text: 'Tóm tắt "Sơn Tinh Thủy Tinh" - 17/03/2025' },
+    { id: 2, text: 'Tóm tắt "Sơn Tinh Thủy Tinh" - 17/03/2025' }
   ]);
+
   const [readHistory, setReadHistory] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
@@ -43,6 +45,8 @@ const ProfilePage = () => {
       console.log("No user data found in localStorage");
     }
   }, []);
+
+  // Load read history when user ID is available
   useEffect(() => {
     if (user.id) {
       console.log("Loading read history for user:", user.id);
@@ -51,15 +55,17 @@ const ProfilePage = () => {
         // Lọc trùng lặp dựa trên title
         const uniqueHistory = response.data
           .filter(
-            (item, index, self) =>
+            (item, index, self) => 
               index === self.findIndex((t) => t.title === item.title)
           );
         setReadHistory(uniqueHistory);
       });
     }
   }, [user.id]);
+
   // Xử lý upload ảnh đại diện
   const handleAvatarClick = () => {
+    console.log("Avatar or overlay clicked");
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -68,22 +74,38 @@ const ProfilePage = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      console.log("File selected:", file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const newAvatar = reader.result;
+        console.log("New avatar URL:", newAvatar);
         setUser({ ...user, avatar: newAvatar });
         setUploadMessage("Upload ảnh thành công! 🎉");
+        // Hiệu ứng confetti khi upload thành công
         confetti({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ["#1976d2", "#ffca28", "#f06292"],
+          colors: ["#1976d2", "#ffca28", "#f06292"]
         });
         setTimeout(() => setUploadMessage(""), 3000);
       };
       reader.readAsDataURL(file);
     }
   };
+
+  const handleUpdateProfile = (updatedUser) => {
+    setUser({ ...user, ...updatedUser });
+    setIsModalOpen(false);
+    // Hiệu ứng confetti khi nhấn "Lưu"
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#1976d2", "#ffca28", "#f06292"]
+    });
+  };
+
   const settings = {
     dots: true,
     infinite: true,
@@ -107,16 +129,6 @@ const ProfilePage = () => {
         },
       },
     ],
-  };
-  const handleUpdateProfile = (updatedUser) => {
-    setUser({ ...user, ...updatedUser });
-    setIsModalOpen(false);
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ["#1976d2", "#ffca28", "#f06292"],
-    });
   };
 
   return (
@@ -182,22 +194,37 @@ const ProfilePage = () => {
 
           {/* Profile History */}
           <div className={styles.profileHistory}>
-  <h2 className={styles.historyTitle}>Lịch sử đọc</h2>
+            <h2 className={styles.historyTitle}>Lịch sử tóm tắt</h2>
+            <div className={styles.historyList}>
+              {history.map((item) => (
+                <div key={item.id} className={styles.historyItem}>
+                  <p className={styles.historyText}>{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Read History Section with Slider */}
+          <div className={styles.readHistorySection}>
+  <h2 className={styles.sectionTitle}>Lịch sử đọc</h2>
   {readHistory.length > 0 ? (
     <Slider {...settings}>
-      {readHistory.map((item) => (
-        <div key={item.id}>
-          <h3>{item.title}</h3>
-          <img
-            src={item.imageUrl || "https://via.placeholder.com/150?text=Sample+Image"}
-            alt={item.title}
-            style={{ width: "100%", height: "150px", objectFit: "cover" }}
-          />
+      {readHistory.map((item, index) => (
+        <div key={index} className={styles.historyCard}>
+          <div className={styles.historyImageContainer}>
+            <img 
+              src={item.imageUrl || "https://via.placeholder.com/150"} 
+              alt={item.title}
+              className={styles.historyImage}
+            />
+          </div>
+          <h3 className={styles.historyTitle}>{item.title}</h3>
+      
         </div>
       ))}
     </Slider>
   ) : (
-    <p>Không có lịch sử đọc.</p>
+    <p className={styles.emptyMessage}>Không có lịch sử đọc.</p>
   )}
 </div>
         </div>
@@ -214,7 +241,7 @@ const ProfilePage = () => {
                 const updatedUser = {
                   name: e.target.name.value,
                   grade: e.target.grade.value,
-                  avatar: user.avatar,
+                  avatar: user.avatar
                 };
                 handleUpdateProfile(updatedUser);
               }}

@@ -99,7 +99,7 @@ const Header = () => {
           </svg>
           Trang chủ
         </Link>
-        <Link to="/summary" className={styles.navLink}>
+        <Link to="/create-summary" className={styles.navLink}>
           <svg
             width="16"
             height="16"

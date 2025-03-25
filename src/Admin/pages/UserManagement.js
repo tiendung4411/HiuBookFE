@@ -1,19 +1,17 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom"; // Sử dụng Outlet và router hooks
 import AdminSidebar from "../components/AdminSidebar"; // Import sidebar
 import styles from "../styles/UserManagement.module.css";
 import StatCard from "../components/StatCard";
-
+import { getAllUsers } from "../../api/users";
 const UserManagement = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [users, setUsers] = useState([
-    { id: 1, name: "Nguyen Van A", email: "a@example.com", role: "User" },
-    { id: 2, name: "Tran Thi B", email: "b@example.com", role: "Admin" },
-    { id: 3, name: "Le Van C", email: "c@example.com", role: "User" }
+   
   ]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [newUser, setNewUser] = useState({ name: "", email: "", role: "User" });
+  const [newUser, setNewUser] = useState({ fullName: "", email: "", role: "User" });
   const [editUser, setEditUser] = useState(null);
   const [viewUser, setViewUser] = useState(null);
   const [deleteUserId, setDeleteUserId] = useState(null);
@@ -21,13 +19,20 @@ const UserManagement = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [isDarkMode, setIsDarkMode] = useState(false);
   const usersPerPage = 5;
-
+  useEffect(() => {
+    getAllUsers().then((response) => {
+      console.log("Fetched users in admin:", response.data);
+      setUsers(response.data);
+    });
+  }, []);
   // Tìm kiếm
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+
 
   // Sắp xếp
   const sortedUsers = [...filteredUsers].sort((a, b) => {
@@ -47,7 +52,7 @@ const UserManagement = () => {
     e.preventDefault();
     const id = users.length + 1;
     setUsers([...users, { id, ...newUser }]);
-    setNewUser({ name: "", email: "", role: "User" });
+    setNewUser({ fullName: "", email: "", role: "User" });
   };
 
   // Sửa người dùng
@@ -120,7 +125,7 @@ const UserManagement = () => {
             <button
               className={styles.addButton}
               onClick={() =>
-                setEditUser({ id: null, name: "", email: "", role: "User" })
+                setEditUser({ id: null, fullName: "", email: "", role: "User" })
               }
             >
               <span className={styles.addIcon}>➕</span> Thêm
@@ -134,7 +139,7 @@ const UserManagement = () => {
                 <th onClick={() => requestSort("id")}>
                   ID <button className={styles.sortButton}>↕</button>
                 </th>
-                <th onClick={() => requestSort("name")}>
+                <th onClick={() => requestSort("fullName")}>
                   Tên <button className={styles.sortButton}>↕</button>
                 </th>
                 <th onClick={() => requestSort("email")}>
@@ -150,7 +155,7 @@ const UserManagement = () => {
               {currentUsers.map((user) => (
                 <tr key={user.id}>
                   <td>{user.id}</td>
-                  <td>{user.name}</td>
+                  <td>{user.fullName}</td>
                   <td>{user.email}</td>
                   <td>{user.role}</td>
                   <td>
@@ -210,7 +215,7 @@ const UserManagement = () => {
             <h2 className={styles.modalContent}>Chi tiết Người Dùng</h2>
             <div className={styles.viewDetails}>
               <p>ID: {viewUser.id}</p>
-              <p>Tên: {viewUser.name}</p>
+              <p>Tên: {viewUser.fullName}</p>
               <p>Email: {viewUser.email}</p>
               <p>Quyền: {viewUser.role}</p>
             </div>
@@ -241,9 +246,9 @@ const UserManagement = () => {
                 <label>Tên</label>
                 <input
                   type="text"
-                  value={editUser.name}
+                  value={editUser.fullName}
                   onChange={(e) =>
-                    setEditUser({ ...editUser, name: e.target.value })
+                    setEditUser({ ...editUser, fullName: e.target.value })
                   }
                   required
                 />
