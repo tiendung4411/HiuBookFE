@@ -35,7 +35,8 @@ const SummaryPage = () => {
   const [summaryResult, setSummaryResult] = useState("");
   const [summaries, setSummaries] = useState([]);
   const [selectedSummary, setSelectedSummary] = useState("");
-  const [historySummaries, setHistorySummaries] = useState([]); // Array of { sessionId, histories: [] }
+  const [historySummaries, setHistorySummaries] = useState([]); // Histories for the current session
+  const [currentSessionId, setCurrentSessionId] = useState(null); // Track the current session
   const [showHistory, setShowHistory] = useState(false);
   const [generatedImage, setGeneratedImage] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -110,7 +111,7 @@ const SummaryPage = () => {
       setIsLoading(true);
       try {
         const response = await SummarySessionService.startSession(userId, textInput, selectedMethod);
-        // Expecting SummaryHistoryDTO: { historyId, method, summaryContent, isAccepted }
+        console.log("Start session response:", response); // Debug log
         const summaryContent = response.summaryContent || "Không có nội dung tóm tắt";
         const wordCount = summaryContent.split(/\s+/).filter(Boolean).length;
         const summary = { content: summaryContent, wordCount };
@@ -118,9 +119,8 @@ const SummaryPage = () => {
         setSummaries([summary]);
         setSelectedSummary(summary.content);
         setSummaryResult(summary.content);
-
-        // Fetch updated history after creating a new summary
-        await fetchHistorySummaries();
+        setCurrentSessionId(response.sessionId); // Set the current session ID
+        console.log("Current session ID set to:", response.sessionId); // Debug log
       } catch (error) {
         setSummaries([]);
         setSelectedSummary("Ôi! Có lỗi khi tóm tắt nha! 😅");
@@ -136,38 +136,28 @@ const SummaryPage = () => {
     }
   };
 
-  const fetchHistorySummaries = async () => {
-    if (!userId) return;
-    try {
-      // Assuming you’ll add an endpoint like /api/summary-histories/user/{userId}
-      const response = await fetch(`/api/summary-histories/user/${userId}`);
-      const histories = await response.json();
-      // Group by sessionId (you’ll need to adjust the backend to return sessionId with each history)
-      const groupedHistories = groupHistoriesBySession(histories);
-      setHistorySummaries(groupedHistories);
-    } catch (error) {
-      console.error("Error fetching history summaries:", error);
+  const fetchHistorySummaries = async (sessionId) => {
+    console.log("Fetching histories for session:", sessionId); // Debug log
+    if (!userId || !sessionId) {
+      console.log("Missing userId or sessionId:", { userId, sessionId });
+      setHistorySummaries([]);
+      return;
     }
-  };
-
-  const groupHistoriesBySession = (histories) => {
-    const grouped = {};
-    histories.forEach((history) => {
-      const sessionId = history.sessionId; // Adjust based on actual response structure
-      if (!grouped[sessionId]) {
-        grouped[sessionId] = { sessionId, histories: [] };
-      }
-      grouped[sessionId].histories.push({
+    try {
+      const histories = await SummarySessionService.getHistoriesBySession(sessionId);
+      console.log("Histories fetched:", histories); // Debug log
+      const formattedHistories = histories.map(history => ({
         historyId: history.historyId,
         method: history.method,
         content: history.summaryContent,
         wordCount: history.summaryContent.split(/\s+/).filter(Boolean).length,
-        timestamp: history.timestamp || new Date().toLocaleString(), // Add timestamp if available
-      });
-    });
-    return Object.values(grouped).sort((a, b) => 
-      new Date(b.histories[0].timestamp) - new Date(a.histories[0].timestamp)
-    ); // Sort by latest session
+        timestamp: history.timestamp || new Date().toLocaleString(),
+      }));
+      setHistorySummaries(formattedHistories);
+    } catch (error) {
+      console.error("Error fetching session histories:", error);
+      setHistorySummaries([]);
+    }
   };
 
   const handleTextSubmit = () => {
@@ -181,6 +171,8 @@ const SummaryPage = () => {
     setSummaryResult("");
     setGeneratedImage(null);
     setUploadedImage(null);
+    setCurrentSessionId(null);
+    setHistorySummaries([]);
   };
 
   const generateImage = async () => {
@@ -209,7 +201,6 @@ const SummaryPage = () => {
     setSelectedSummary(summary.content);
     setSummaryResult(summary.content);
     setShowConfetti(true);
-    alert(`Bạn đã chọn bản tóm tắt này! 🎉`);
     setTimeout(() => setShowConfetti(false), 3000);
   };
 
@@ -222,21 +213,27 @@ const SummaryPage = () => {
     setSelectedSummary(summary.content);
     setSummaryResult(summary.content);
     setShowConfetti(true);
-    alert(`Bạn đã chọn lại bản tóm tắt từ lịch sử! 🎉`);
-    setTimeout(() => setShowConfetti(false), 3000);
+    setTimeout(() => setShowConfetti(false), 3000); 
     setShowHistory(false);
   };
 
-  const handleDeleteHistorySummary = async (sessionId, historyId) => {
+  const handleDeleteHistorySummary = async (historyId) => {
     if (window.confirm("Bạn có chắc muốn xóa lần tóm tắt này không?")) {
       try {
-        await fetch(`/api/summary-histories/${historyId}`, { method: "DELETE" });
-        await fetchHistorySummaries(); // Refresh history after deletion
+        await SummarySessionService.deleteSummaryHistory(historyId);
+        await fetchHistorySummaries(currentSessionId); // Refresh history after deletion
         alert("Đã xóa lần tóm tắt này! 🗑️");
       } catch (error) {
         console.error("Error deleting history:", error);
         alert("Ôi! Có lỗi khi xóa lịch sử! 😅");
       }
+    }
+  };
+
+  const handleShowHistory = () => {
+    setShowHistory(true);
+    if (currentSessionId) {
+      fetchHistorySummaries(currentSessionId); // Fetch histories when tab is clicked
     }
   };
 
@@ -272,7 +269,7 @@ const SummaryPage = () => {
 
   useEffect(() => {
     setShowGuideSteps(true);
-    fetchHistorySummaries(); // Fetch history on mount
+    // Don’t fetch histories on mount; wait for "Xem lịch sử" button
   }, [userId]);
 
   useEffect(() => {
@@ -571,18 +568,18 @@ const SummaryPage = () => {
               ) : (
                 <>
                   <h3 className={styles.sectionTitle}>
-                    Lịch sử tóm tắt của bé! 🕒
+                    Lịch sử tóm tắt của phiên này! 🕒
                   </h3>
-                  {historySummaries.length > 0 ? (
-                    <div className={styles.historyContainer}>
-                      {historySummaries.map((sessionGroup) => (
-                        <div key={sessionGroup.sessionId} className={styles.sessionGroup}>
+                  {currentSessionId ? (
+                    historySummaries.length > 0 ? (
+                      <div className={styles.historyContainer}>
+                        <div className={styles.sessionGroup}>
                           <div className={styles.historyHeader}>
                             <p className={styles.historyTimestamp}>
-                              Phiên {sessionGroup.sessionId} ({sessionGroup.histories[0].timestamp})
+                              Phiên {currentSessionId} ({historySummaries[0].timestamp})
                             </p>
                           </div>
-                          {sessionGroup.histories.map((history) => (
+                          {historySummaries.map((history) => (
                             <div key={history.historyId} className={styles.historyItem}>
                               <div className={styles.historySummaryOptions}>
                                 <div
@@ -603,7 +600,7 @@ const SummaryPage = () => {
                               </div>
                               <button
                                 className={styles.deleteHistoryButton}
-                                onClick={() => handleDeleteHistorySummary(sessionGroup.sessionId, history.historyId)}
+                                onClick={() => handleDeleteHistorySummary(history.historyId)}
                                 title="Xóa lần tóm tắt này"
                               >
                                 <FaTrash />
@@ -611,11 +608,15 @@ const SummaryPage = () => {
                             </div>
                           ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ) : (
+                      <p className={styles.resultText}>
+                        Chưa có lịch sử tóm tắt nào cho phiên này! 😊
+                      </p>
+                    )
                   ) : (
                     <p className={styles.resultText}>
-                      Chưa có lịch sử tóm tắt nào cho bạn! 😊
+                      Vui lòng tóm tắt để xem lịch sử của phiên! 😊
                     </p>
                   )}
                 </>
@@ -633,7 +634,7 @@ const SummaryPage = () => {
                   className={`${styles.tabButton} ${
                     showHistory ? styles.activeTab : ""
                   }`}
-                  onClick={() => setShowHistory(true)}
+                  onClick={handleShowHistory}
                 >
                   Xem lịch sử 🕒
                 </button>

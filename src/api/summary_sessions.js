@@ -80,6 +80,7 @@ const SummarySessionService = {
         content: content,
         method: method
       });
+      console.log("Response from start session:", response.data); 
       return response.data; // Returns SummaryHistoryDTO
     } catch (error) {
       console.error('Error starting session:', error);
@@ -134,17 +135,28 @@ const SummarySessionService = {
     }
   },
 
+  // Generate image for a session
+  async generateImage(content) {
+    try {
+      const response = await api.post('/summary-sessions/generate-image', { content });
+      return response.data; // Assuming the API returns an image URL or related data
+    } catch (error) {
+      console.error('Error generating image:', error);
+      throw error;
+    }
+  },
 
-async generateImage(content) {
-  try {
-    const response = await api.post('/summary-sessions/generate-image', { content });
-    return response.data; // Assuming the API returns an image URL or related data.
-  } catch (error) {
-    console.error('Error generating image:', error);
-    throw error;
-  }
-},
+  // New method: Get all histories for a specific session
+  async getHistoriesBySession(sessionId) {
+    try {
+      console.log('Getting histories for session:', sessionId);
+      const response = await api.get(`/summary-histories/session/${sessionId}`);
+      return response.data; // Returns a list of SummaryHistoryDTOs
+    } catch (error) {
+      console.error('Error fetching histories for session:', error);
+      throw error;
+    }
+  },
 };
-
 
 export default SummarySessionService;
