@@ -22,7 +22,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { processPdf } from "../api/summaries";
+import { processPdf, createSummary, uploadImageToCloudinary } from "../api/summaries";
 import SummarySessionService from "../api/summary_sessions";
 
 // Register Chart.js components
@@ -32,11 +32,12 @@ const SummaryPage = () => {
   const [selectedMethod, setSelectedMethod] = useState("extract");
   const [selectedGrade, setSelectedGrade] = useState(1);
   const [textInput, setTextInput] = useState("");
+  const [titleInput, setTitleInput] = useState(""); // New state for title input
   const [summaryResult, setSummaryResult] = useState("");
   const [summaries, setSummaries] = useState([]);
   const [selectedSummary, setSelectedSummary] = useState("");
-  const [historySummaries, setHistorySummaries] = useState([]); // Histories for the current session
-  const [currentSessionId, setCurrentSessionId] = useState(null); // Track the current session
+  const [historySummaries, setHistorySummaries] = useState([]);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
   const [generatedImage, setGeneratedImage] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -73,7 +74,7 @@ const SummaryPage = () => {
     if (!file || file.type !== "application/pdf") {
       setSummaries([]);
       setSelectedSummary("Ôi! Hãy chọn file PDF nha! 😅");
-      setSummaryResult("Ôi! Hãy chọn file PDF nha! 😅");
+      setSummaryResult("Ôi! Có lỗi khi xử lý PDF nha! 😅");
       return;
     }
 
@@ -92,17 +93,20 @@ const SummaryPage = () => {
     }
   };
 
-  const handleImageUpload = (event) => {
+  const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setUploadedImage(reader.result);
-        setGeneratedImage(null);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      alert("Ôi! Hãy chọn file hình ảnh nha! 😅");
+      try {
+        const response = await uploadImageToCloudinary(file);
+        if (response.success) {
+          setUploadedImage(response.imageUrl);
+          setGeneratedImage(null);
+        } else {
+          console.error("Image upload failed:", response);
+        }
+      } catch (error) {
+        console.error("Image upload error:", error);
+      }
     }
   };
 
@@ -111,7 +115,7 @@ const SummaryPage = () => {
       setIsLoading(true);
       try {
         const response = await SummarySessionService.startSession(userId, textInput, selectedMethod);
-        console.log("Start session response:", response); // Debug log
+        console.log("Start session response:", response);
         const summaryContent = response.summaryContent || "Không có nội dung tóm tắt";
         const wordCount = summaryContent.split(/\s+/).filter(Boolean).length;
         const summary = { content: summaryContent, wordCount };
@@ -119,8 +123,8 @@ const SummaryPage = () => {
         setSummaries([summary]);
         setSelectedSummary(summary.content);
         setSummaryResult(summary.content);
-        setCurrentSessionId(response.sessionId); // Set the current session ID
-        console.log("Current session ID set to:", response.sessionId); // Debug log
+        setCurrentSessionId(response.sessionId);
+        console.log("Current session ID set to:", response.sessionId);
       } catch (error) {
         setSummaries([]);
         setSelectedSummary("Ôi! Có lỗi khi tóm tắt nha! 😅");
@@ -137,7 +141,7 @@ const SummaryPage = () => {
   };
 
   const fetchHistorySummaries = async (sessionId) => {
-    console.log("Fetching histories for session:", sessionId); // Debug log
+    console.log("Fetching histories for session:", sessionId);
     if (!userId || !sessionId) {
       console.log("Missing userId or sessionId:", { userId, sessionId });
       setHistorySummaries([]);
@@ -145,7 +149,7 @@ const SummaryPage = () => {
     }
     try {
       const histories = await SummarySessionService.getHistoriesBySession(sessionId);
-      console.log("Histories fetched:", histories); // Debug log
+      console.log("Histories fetched:", histories);
       const formattedHistories = histories.map(history => ({
         historyId: history.historyId,
         method: history.method,
@@ -166,6 +170,7 @@ const SummaryPage = () => {
 
   const handleReset = () => {
     setTextInput("");
+    setTitleInput(""); // Reset title input
     setSummaries([]);
     setSelectedSummary("");
     setSummaryResult("");
@@ -176,56 +181,70 @@ const SummaryPage = () => {
   };
 
   const generateImage = async () => {
-    if (selectedSummary) {
-      if (window.confirm("Bạn muốn tạo hình ảnh bằng AI dựa trên bản tóm tắt này?")) {
-        setIsGeneratingImage(true);
-        try {
-          const imageData = await SummarySessionService.generateImage(selectedSummary);
-          const imageUrl = imageData.imageUrl || imageData;
-          setGeneratedImage(imageUrl);
-          setUploadedImage(null);
-          alert("Hình ảnh đã được tạo thành công! 🎨");
-        } catch (error) {
-          alert("Ôi! Có lỗi khi tạo ảnh nha! 😅");
-          console.error("Error generating image:", error);
-        } finally {
-          setIsGeneratingImage(false);
-        }
+    if (selectedSummary && window.confirm("Bạn muốn tạo hình ảnh bằng AI dựa trên bản tóm tắt này?")) {
+      setIsGeneratingImage(true);
+      try {
+        const imageData = await SummarySessionService.generateImage(selectedSummary);
+        const imageUrl = imageData.imageUrl || imageData;
+        setGeneratedImage(imageUrl);
+        setUploadedImage(null);
+      } catch (error) {
+        console.error("Error generating image:", error);
+      } finally {
+        setIsGeneratingImage(false);
       }
-    } else {
-      alert("Vui lòng tóm tắt trước khi tạo hình ảnh!");
     }
   };
 
-  const handleSelectSummary = (summary) => {
+  const handleSelectSummary = async (summary) => {
     setSelectedSummary(summary.content);
     setSummaryResult(summary.content);
     setShowConfetti(true);
+
+    if (!showHistory) {
+      try {
+        const summaryData = {
+          title: titleInput || "Tóm tắt - " + new Date().toLocaleString(), // Use titleInput if provided, else default
+          content: textInput,
+          summaryContent: summary.content,
+          status: "PENDING",
+          method: summaries[0]?.method || selectedMethod,
+          grade: selectedGrade.toString(),
+          createdBy: { userId: userId },
+          imageUrl: uploadedImage || generatedImage || "",
+        };
+
+        console.log("Creating summary with data:", summaryData);
+        const response = await createSummary(summaryData);
+        console.log("Summary created:", response);
+      } catch (error) {
+        console.error("Error creating summary:", error);
+      }
+    }
+
     setTimeout(() => setShowConfetti(false), 3000);
   };
 
   const handleSelectHistorySummary = (summary) => {
     if (!summary || !summary.content) {
       console.error("Invalid summary object:", summary);
-      alert("Ôi! Bản tóm tắt này không hợp lệ! 😅");
       return;
     }
     setSelectedSummary(summary.content);
     setSummaryResult(summary.content);
-    setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 3000); 
+    setSummaries([{ content: summary.content, wordCount: summary.wordCount, method: summary.method }]);
     setShowHistory(false);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
   };
 
   const handleDeleteHistorySummary = async (historyId) => {
     if (window.confirm("Bạn có chắc muốn xóa lần tóm tắt này không?")) {
       try {
         await SummarySessionService.deleteSummaryHistory(historyId);
-        await fetchHistorySummaries(currentSessionId); // Refresh history after deletion
-        alert("Đã xóa lần tóm tắt này! 🗑️");
+        await fetchHistorySummaries(currentSessionId);
       } catch (error) {
         console.error("Error deleting history:", error);
-        alert("Ôi! Có lỗi khi xóa lịch sử! 😅");
       }
     }
   };
@@ -233,7 +252,7 @@ const SummaryPage = () => {
   const handleShowHistory = () => {
     setShowHistory(true);
     if (currentSessionId) {
-      fetchHistorySummaries(currentSessionId); // Fetch histories when tab is clicked
+      fetchHistorySummaries(currentSessionId);
     }
   };
 
@@ -269,7 +288,6 @@ const SummaryPage = () => {
 
   useEffect(() => {
     setShowGuideSteps(true);
-    // Don’t fetch histories on mount; wait for "Xem lịch sử" button
   }, [userId]);
 
   useEffect(() => {
@@ -450,6 +468,16 @@ const SummaryPage = () => {
         <div className={styles.inputResultSection}>
           <div className={styles.inputResultContainer}>
             <div className={styles.textInputContainer}>
+              <h3 className={styles.sectionTitle}>
+                Nhập tiêu đề cho bản tóm tắt nha! 📝
+              </h3>
+              <input
+                type="text"
+                className={styles.titleInput}
+                value={titleInput}
+                onChange={(e) => setTitleInput(e.target.value)}
+                placeholder="Nhập tiêu đề nha! 📝"
+              />
               <h3 className={styles.sectionTitle}>
                 Nhập văn bản muốn tóm tắt nha! 😄
               </h3>

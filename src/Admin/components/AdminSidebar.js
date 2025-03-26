@@ -19,7 +19,6 @@ const AdminSidebar = () => {
     { path: "/admin/dashboard", label: "Tổng Quan", icon: <FaTachometerAlt /> },
     { path: "/admin/users", label: "Người Dùng", icon: <FaUsers /> },
     { path: "/admin/summaries", label: "Tóm Tắt", icon: <FaBook /> },
-    { path: "/admin/stories", label: "Quản Lý Truyện", icon: <FaBookOpen /> } // Đã thêm đúng
   ];
 
   const handleLogout = () => {

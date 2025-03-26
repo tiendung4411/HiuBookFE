@@ -32,7 +32,7 @@ const SummaryCarousel = ({ title, items }) => {
                     {items.map((item) => (
                         <div key={item.id} className={styles.summaryCard}>
                             <img
-                                src={item.image}
+                                src={item.imageUrl}
                                 alt={item.title}
                                 className={styles.summaryImage}
                             />

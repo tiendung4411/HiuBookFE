@@ -1029,3 +1029,87 @@
     transform: scale(1);
   }
 }
+
+/* Title Input */
+.titleInput {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 15px;
+  border: 2px solid #a3d4ff;
+  background: white;
+  margin-bottom: 10px;
+  transition: all 0.3s ease-in-out;
+}
+
+.titleInput:focus {
+  border-color: #ffeb3b;
+  box-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+  outline: none;
+}
+
+/* History Image Container */
+.historyImageContainer {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.historyImage {
+  max-width: 100%;
+  height: auto;
+  border-radius: 15px;
+  border: 2px solid #a3d4ff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Publish Button */
+.publishButton {
+  padding: 15px 30px;
+  font-size: 16px;
+  color: white;
+  background: linear-gradient(45deg, #ff4081, #f06292);
+  border: 2px solid #a3d4ff;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  animation: pulse 2s infinite;
+}
+
+.publishButton:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  transform: scale(1.05);
+}
+
+/* Responsive Design for New Elements */
+@media (max-width: 768px) {
+  .titleInput {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .historyImage {
+    max-width: 80%;
+  }
+
+  .publishButton {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleInput {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .historyImage {
+    max-width: 100%;
+  }
+
+  .publishButton {
+    padding: 8px 15px;
+    font-size: 12px;
+  }
+}

@@ -729,3 +729,73 @@
     height: 100px;
   }
 }
+/* Filter buttons */
+.filterButtons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filterButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.filterButton:hover {
+  background-color: #d0d0d0;
+}
+
+.filterButton.active {
+  background-color: #1976d2;
+  color: white;
+}
+
+/* History item status styles */
+.historyItem {
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.historyItem.approved {
+  background-color: #e6ffe6; /* Light green for APPROVED */
+  border-left: 4px solid #28a745;
+}
+
+.historyItem.pending {
+  background-color: #fff3e6; /* Light orange for PENDING */
+  border-left: 4px solid #ff9800;
+}
+
+.statusIcon {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.historyItem.approved .statusIcon {
+  color: #28a745; /* Green for APPROVED */
+}
+
+.historyItem.pending .statusIcon {
+  color: #ff9800; /* Orange for PENDING */
+}
+.saveChangesButton {
+  background-color: #1976d2;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 20px auto;
+  display: block;
+  transition: background-color 0.3s;
+}
+
+.saveChangesButton:hover {
+  background-color: #1565c0;
+}

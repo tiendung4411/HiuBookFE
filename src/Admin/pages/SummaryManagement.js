@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminHeader from "../components/AdminHeader";
 import StatCard from "../components/StatCard";
@@ -11,116 +11,110 @@ import {
   FaSortAlphaDown,
   FaSortAlphaUp,
   FaTrash,
-  FaEye
+  FaEye,
 } from "react-icons/fa";
 import Modal from "react-modal";
 import { motion, AnimatePresence } from "framer-motion";
+import { getAllSummariesAdmin } from "../../api/summaries";
+import {
+  Chart,
+  BarController,
+  PieController,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-// Dữ liệu tĩnh (giả lập)
-const initialSummaries = [
-  {
-    id: 1,
-    title: "Thỏ và Rùa",
-    class: "Lớp 1",
-    method: "Extract",
-    createdAt: "2025-03-16",
-    content: "Câu chuyện về chú thỏ và chú rùa."
-  },
-  {
-    id: 2,
-    title: "Cậu Bé và Cây Táo",
-    class: "Lớp 1",
-    method: "Paraphrase",
-    createdAt: "2025-03-15",
-    content: "Câu chuyện cảm động về tình yêu gia đình."
-  },
-  {
-    id: 3,
-    title: "Bạn Thân",
-    class: "Lớp 2",
-    method: "Extract",
-    createdAt: "2025-03-14",
-    content: "Bài học về tình bạn."
-  },
-  {
-    id: 4,
-    title: "Nước và Thời Tiết",
-    class: "Lớp 3",
-    method: "Paraphrase",
-    createdAt: "2025-03-13",
-    content: "Khám phá cách nước ảnh hưởng đến thời tiết."
-  },
-  {
-    id: 5,
-    title: "Tấm Cám",
-    class: "Lớp 5",
-    method: "Extract",
-    createdAt: "2025-03-12",
-    content: "Truyện cổ tích về lòng tốt."
-  },
-  {
-    id: 6,
-    title: "Bí Ẩn Đại Dương",
-    class: "Lớp 5",
-    method: "Paraphrase",
-    createdAt: "2025-03-11",
-    content: "Cuộc phiêu lưu dưới lòng đại dương."
-  }
-];
+// Register Chart.js components
+Chart.register(
+  BarController,
+  PieController,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-// Cài đặt root cho modal
+// Set modal root
 Modal.setAppElement("#root");
 
 const SummaryManagement = () => {
-  const [summaries, setSummaries] = useState(initialSummaries);
+  const gradeChartRef = useRef(null);
+  const methodChartRef = useRef(null);
+  const gradeChartInstance = useRef(null);
+  const methodChartInstance = useRef(null);
+
+  const [summaries, setSummaries] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [methodFilter, setMethodFilter] = useState("All");
   const [classFilter, setClassFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All"); // New status filter
   const [dateFilter, setDateFilter] = useState("All");
   const [sortOrder, setSortOrder] = useState("A-Z");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isViewMode, setIsViewMode] = useState(false);
+  const [formData, setFormData] = useState({}); 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentSummary, setCurrentSummary] = useState(null);
   const [selectedSummaries, setSelectedSummaries] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    class: "",
-    method: "Extract",
-    createdAt: new Date().toISOString().split("T")[0],
-    content: ""
-  });
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 4;
 
-  // Lọc và tìm kiếm tóm tắt
+  // Fetch summaries on mount
+  useEffect(() => {
+    const fetchSummaries = async () => {
+      try {
+        setLoading(true);
+        const response = await getAllSummariesAdmin();
+        setSummaries(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching summaries:", error);
+        setLoading(false);
+      }
+    };
+    fetchSummaries();
+  }, []);
+
+  // Filter and search summaries
   const filteredSummaries = summaries.filter((summary) => {
     const matchesSearch =
-      summary.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      summary.content.toLowerCase().includes(searchTerm.toLowerCase());
+      (summary.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (summary.content?.toLowerCase() || "").includes(searchTerm.toLowerCase());
     const matchesMethod =
       methodFilter === "All" || summary.method === methodFilter;
-    const matchesClass = classFilter === "All" || summary.class === classFilter;
+    const matchesClass =
+      classFilter === "All" || summary.grade === classFilter; // Assuming grade is the field
+    const matchesStatus =
+      statusFilter === "All" || summary.status === statusFilter;
     const matchesDate =
       dateFilter === "All" ||
       (dateFilter === "Last7Days" &&
         new Date(summary.createdAt) >=
           new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
-    return matchesSearch && matchesMethod && matchesClass && matchesDate;
+    return matchesSearch && matchesMethod && matchesClass && matchesStatus && matchesDate;
   });
 
-  // Sắp xếp tóm tắt
+  // Sort summaries
   const sortedSummaries = [...filteredSummaries].sort((a, b) => {
     if (sortOrder === "A-Z") {
-      return a.title.localeCompare(b.title);
+      return (a.title || "").localeCompare(b.title || "");
     } else {
-      return b.title.localeCompare(a.title);
+      return (b.title || "").localeCompare(a.title || "");
     }
   });
 
-  // Phân trang
+  // Pagination
   const totalPages = Math.ceil(sortedSummaries.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedSummaries = sortedSummaries.slice(
@@ -128,12 +122,112 @@ const SummaryManagement = () => {
     startIndex + itemsPerPage
   );
 
-  // Thẻ thống kê
+  // Stats
   const totalSummaries = summaries.length;
-  const extractSummaries = summaries.filter(
-    (s) => s.method === "Extract"
-  ).length;
-  const classSummaries = [...new Set(summaries.map((s) => s.class))].length;
+  const approvedSummaries = summaries.filter((s) => s.status === "APPROVED").length;
+  const pendingSummaries = summaries.filter((s) => s.status === "PENDING").length;
+
+  // Charts
+  useEffect(() => {
+    if (!summaries.length || loading) return;
+
+    // Grade Bar Chart
+    const gradeCount = {
+      "Lớp 1": 0,
+      "Lớp 2": 0,
+      "Lớp 3": 0,
+      "Lớp 4": 0,
+      "Lớp 5": 0,
+      "Khác": 0,
+    };
+
+    summaries.forEach((summary) => {
+      const grade = summary.grade ? String(summary.grade) : null;
+      const normalizedGrade = grade ? `Lớp ${grade}` : "Khác";
+      if (gradeCount.hasOwnProperty(normalizedGrade)) {
+        gradeCount[normalizedGrade]++;
+      } else {
+        gradeCount["Khác"]++;
+      }
+    });
+
+    if (gradeChartInstance.current) gradeChartInstance.current.destroy();
+    if (gradeChartRef.current) {
+      gradeChartInstance.current = new Chart(gradeChartRef.current, {
+        type: "bar",
+        data: {
+          labels: Object.keys(gradeCount),
+          datasets: [
+            {
+              label: "Số tóm tắt",
+              data: Object.values(gradeCount),
+              backgroundColor: "#3498db",
+              borderColor: "#3498db",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: "Số lượng" } },
+            x: { title: { display: true, text: "Lớp học" } },
+          },
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: "Số lượng tóm tắt theo lớp học" },
+          },
+        },
+      });
+    }
+
+    // Method Pie Chart
+    const methodCount = {
+      "Diễn giải": 0,
+      "Trích xuất": 0,
+    };
+
+    summaries.forEach((summary) => {
+      const method = summary.method ? summary.method.toLowerCase() : null;
+      if (method === "paraphrase" || method === "abstractive" || method === "a") {
+        methodCount["Diễn giải"]++;
+      } else if (method === "extractive" || method === "a" || method === "extraction") {
+        methodCount["Trích xuất"]++;
+      }
+      // Ignore any other values or typos
+    });
+
+    if (methodChartInstance.current) methodChartInstance.current.destroy();
+    if (methodChartRef.current) {
+      methodChartInstance.current = new Chart(methodChartRef.current, {
+        type: "pie",
+        data: {
+          labels: ["Diễn giải", "Trích xuất"],
+          datasets: [
+            {
+              label: "Tỷ lệ tóm tắt",
+              data: [methodCount["Diễn giải"], methodCount["Trích xuất"]],
+              backgroundColor: ["#2ecc71", "#f1c40f"],
+              borderColor: ["#2ecc71", "#f1c40f"],
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "top" },
+            title: { display: true, text: "Tỷ lệ tóm tắt theo kiểu" },
+          },
+        },
+      });
+    }
+
+    return () => {
+      if (gradeChartInstance.current) gradeChartInstance.current.destroy();
+      if (methodChartInstance.current) methodChartInstance.current.destroy();
+    };
+  }, [summaries, loading]);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -149,9 +243,7 @@ const SummaryManagement = () => {
 
   const handleSelectSummary = (id) => {
     setSelectedSummaries((prev) =>
-      prev.includes(id)
-        ? prev.filter((summaryId) => summaryId !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((summaryId) => summaryId !== id) : [...prev, id]
     );
   };
 
@@ -160,9 +252,7 @@ const SummaryManagement = () => {
   };
 
   const confirmBulkDelete = () => {
-    setSummaries(
-      summaries.filter((summary) => !selectedSummaries.includes(summary.id))
-    );
+    setSummaries(summaries.filter((summary) => !selectedSummaries.includes(summary.summaryId)));
     setSelectedSummaries([]);
     setIsDeleteModalOpen(false);
   };
@@ -172,10 +262,11 @@ const SummaryManagement = () => {
     setIsViewMode(false);
     setFormData({
       title: "",
-      class: "",
+      grade: "",
       method: "Extract",
       createdAt: new Date().toISOString().split("T")[0],
-      content: ""
+      content: "",
+      status: "PENDING",
     });
     setIsModalOpen(true);
   };
@@ -184,7 +275,14 @@ const SummaryManagement = () => {
     setIsEditMode(true);
     setIsViewMode(false);
     setCurrentSummary(summary);
-    setFormData({ ...summary });
+    setFormData({
+      title: summary.title,
+      grade: summary.grade,
+      method: summary.method,
+      createdAt: summary.createdAt.split("T")[0],
+      content: summary.content,
+      status: summary.status,
+    });
     setIsModalOpen(true);
   };
 
@@ -209,14 +307,14 @@ const SummaryManagement = () => {
   };
 
   const handleFormSubmit = () => {
+    // This would ideally call an API to save the summary; here we simulate it
+    const newSummary = {
+      ...formData,
+      summaryId: isEditMode ? currentSummary.summaryId : Date.now().toString(),
+    };
     if (isEditMode) {
-      setSummaries(
-        summaries.map((s) =>
-          s.id === currentSummary.id ? { ...formData, id: s.id } : s
-        )
-      );
-    } else if (!isViewMode) {
-      const newSummary = { ...formData, id: summaries.length + 1 };
+      setSummaries(summaries.map((s) => (s.summaryId === currentSummary.summaryId ? newSummary : s)));
+    } else {
       setSummaries([...summaries, newSummary]);
     }
     closeModal();
@@ -251,17 +349,35 @@ const SummaryManagement = () => {
               icon="📝"
             />
             <StatCard
-              title="Tóm tắt Trích xuất"
-              value={extractSummaries}
+              title="Tóm tắt Đã duyệt"
+              value={approvedSummaries}
               color="#2ecc71"
-              icon="✂️"
+              icon="✅"
             />
             <StatCard
-              title="Số lớp học"
-              value={classSummaries}
+              title="Tóm tắt Chờ duyệt"
+              value={pendingSummaries}
               color="#e74c3c"
-              icon="🏫"
+              icon="⏳"
             />
+          </div>
+          <div className={styles.chartsContainer}>
+            <motion.div
+              className={styles.chart}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <canvas ref={gradeChartRef} id="gradeChart"></canvas>
+            </motion.div>
+            <motion.div
+              className={styles.chart}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <canvas ref={methodChartRef} id="methodChart"></canvas>
+            </motion.div>
           </div>
           <div className={styles.controls}>
             <div className={styles.search}>
@@ -289,11 +405,20 @@ const SummaryManagement = () => {
                 className={styles.filterSelect}
               >
                 <option value="All">Tất cả lớp</option>
-                <option value="Lớp 1">Lớp 1</option>
-                <option value="Lớp 2">Lớp 2</option>
-                <option value="Lớp 3">Lớp 3</option>
-                <option value="Lớp 4">Lớp 4</option>
-                <option value="Lớp 5">Lớp 5</option>
+                <option value="1">Lớp 1</option>
+                <option value="2">Lớp 2</option>
+                <option value="3">Lớp 3</option>
+                <option value="4">Lớp 4</option>
+                <option value="5">Lớp 5</option>
+              </select>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className={styles.filterSelect}
+              >
+                <option value="All">Tất cả trạng thái</option>
+                <option value="APPROVED">Đã duyệt</option>
+                <option value="PENDING">Chờ duyệt</option>
               </select>
               <select
                 value={dateFilter}
@@ -345,7 +470,7 @@ const SummaryManagement = () => {
                       setSelectedSummaries(
                         selectedSummaries.length === paginatedSummaries.length
                           ? []
-                          : paginatedSummaries.map((summary) => summary.id)
+                          : paginatedSummaries.map((summary) => summary.summaryId)
                       )
                     }
                   />
@@ -357,61 +482,81 @@ const SummaryManagement = () => {
                     onClick={toggleSortOrder}
                     className={styles.sortButton}
                   >
-                    {sortOrder === "A-Z" ? (
-                      <FaSortAlphaDown />
-                    ) : (
-                      <FaSortAlphaUp />
-                    )}
+                    {sortOrder === "A-Z" ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
                   </button>
                 </th>
                 <th>Lớp học</th>
                 <th>Kiểu</th>
                 <th>Ngày tạo</th>
+                <th>Trạng thái</th>
                 <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedSummaries.map((summary) => (
-                <motion.tr
-                  key={summary.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedSummaries.includes(summary.id)}
-                      onChange={() => handleSelectSummary(summary.id)}
-                    />
+              {loading ? (
+                <tr>
+                  <td colSpan="8" className={styles.noData}>
+                    Đang tải dữ liệu...
                   </td>
-                  <td>{summary.id}</td>
-                  <td>{summary.title}</td>
-                  <td>{summary.class}</td>
-                  <td>{summary.method}</td>
-                  <td>{summary.createdAt}</td>
-                  <td>
-                    <button
-                      className={styles.viewButton}
-                      onClick={() => openViewModal(summary)}
-                    >
-                      <FaEye />
-                    </button>
-                    <button
-                      className={styles.editButton}
-                      onClick={() => openEditModal(summary)}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      className={styles.deleteButton}
-                      onClick={() => handleDelete(summary.id)}
-                    >
-                      Xóa
-                    </button>
+                </tr>
+              ) : paginatedSummaries.length > 0 ? (
+                paginatedSummaries.map((summary) => (
+                  <motion.tr
+                    key={summary.summaryId}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedSummaries.includes(summary.summaryId)}
+                        onChange={() => handleSelectSummary(summary.summaryId)}
+                      />
+                    </td>
+                    <td>{summary.summaryId.substring(0, 8)}...</td>
+                    <td>{summary.title}</td>
+                    <td>{summary.grade}</td>
+                    <td>{summary.method}</td>
+                    <td>{summary.createdAt.split("T")[0]}</td>
+                    <td>
+                      <span
+                        className={`${styles.status} ${
+                          summary.status === "APPROVED" ? styles.approved : styles.pending
+                        }`}
+                      >
+                        {summary.status === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.viewButton}
+                        onClick={() => openViewModal(summary)}
+                      >
+                        <FaEye />
+                      </button>
+                      <button
+                        className={styles.editButton}
+                        onClick={() => openEditModal(summary)}
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        className={styles.deleteButton}
+                        onClick={() => handleDelete(summary.summaryId)}
+                      >
+                        Xóa
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className={styles.noData}>
+                    Không có dữ liệu tóm tắt
                   </td>
-                </motion.tr>
-              ))}
+                </tr>
+              )}
             </tbody>
           </motion.table>
           <div className={styles.pagination}>
@@ -436,7 +581,7 @@ const SummaryManagement = () => {
         </div>
       </div>
 
-      {/* Modal để thêm/chỉnh sửa/xem tóm tắt */}
+      {/* Modal for Add/Edit/View */}
       <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
@@ -458,24 +603,13 @@ const SummaryManagement = () => {
           </h2>
           {isViewMode ? (
             <div className={styles.viewDetails}>
-              <p>
-                <strong>ID:</strong> {currentSummary?.id}
-              </p>
-              <p>
-                <strong>Tiêu đề:</strong> {currentSummary?.title}
-              </p>
-              <p>
-                <strong>Lớp học:</strong> {currentSummary?.class}
-              </p>
-              <p>
-                <strong>Kiểu:</strong> {currentSummary?.method}
-              </p>
-              <p>
-                <strong>Ngày tạo:</strong> {currentSummary?.createdAt}
-              </p>
-              <p>
-                <strong>Nội dung:</strong> {currentSummary?.content}
-              </p>
+              <p><strong>ID:</strong> {currentSummary?.summaryId}</p>
+              <p><strong>Tiêu đề:</strong> {currentSummary?.title}</p>
+              <p><strong>Lớp học:</strong> {currentSummary?.grade}</p>
+              <p><strong>Kiểu:</strong> {currentSummary?.method}</p>
+              <p><strong>Ngày tạo:</strong> {currentSummary?.createdAt.split("T")[0]}</p>
+              <p><strong>Trạng thái:</strong> {currentSummary?.status}</p>
+              <p><strong>Nội dung:</strong> {currentSummary?.content}</p>
               <button onClick={closeModal} className={styles.cancelButton}>
                 Đóng
               </button>
@@ -501,17 +635,17 @@ const SummaryManagement = () => {
               <div className={styles.formGroup}>
                 <label>Lớp học</label>
                 <select
-                  name="class"
-                  value={formData.class}
+                  name="grade"
+                  value={formData.grade}
                   onChange={handleFormChange}
                   required
                 >
                   <option value="">Chọn lớp</option>
-                  <option value="Lớp 1">Lớp 1</option>
-                  <option value="Lớp 2">Lớp 2</option>
-                  <option value="Lớp 3">Lớp 3</option>
-                  <option value="Lớp 4">Lớp 4</option>
-                  <option value="Lớp 5">Lớp 5</option>
+                  <option value="1">Lớp 1</option>
+                  <option value="2">Lớp 2</option>
+                  <option value="3">Lớp 3</option>
+                  <option value="4">Lớp 4</option>
+                  <option value="5">Lớp 5</option>
                 </select>
               </div>
               <div className={styles.formGroup}>
@@ -534,6 +668,17 @@ const SummaryManagement = () => {
                   onChange={handleFormChange}
                   required
                 />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Trạng thái</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleFormChange}
+                >
+                  <option value="PENDING">Chờ duyệt</option>
+                  <option value="APPROVED">Đã duyệt</option>
+                </select>
               </div>
               <div className={styles.formGroup}>
                 <label>Nội dung</label>
@@ -562,7 +707,7 @@ const SummaryManagement = () => {
         </motion.div>
       </Modal>
 
-      {/* Modal xác nhận xóa */}
+      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onRequestClose={closeDeleteModal}

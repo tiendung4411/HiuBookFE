@@ -19,6 +19,7 @@ import {
   FaArrowRight,
   FaTimes
 } from "react-icons/fa";
+import { getTop10Summaries } from "../api/summaries"; // Import API function
 
 // Import ảnh minh họa cho từng lớp
 import class1Mascot from "../assets/images/kids-playing.png";
@@ -55,44 +56,6 @@ const readingTips = [
   { id: 1, tip: "Đọc 15 phút mỗi ngày để siêu thông minh! 📚✨" },
   { id: 2, tip: "Ghi chú vui khi đọc truyện nhé! ✍️🌟" },
   { id: 3, tip: "Đọc to lên để nhớ lâu hơn nào! 🎙️🎉" }
-];
-
-// Dữ liệu bài đọc mẫu
-const sampleSummaries = [
-  {
-    id: 1,
-    image:
-      "https://www.vocw.edu.vn/wp-content/uploads/2021/01/Ve-tranh-minh-hoa-truyen-co-tich-lop-8.jpg",
-    title: "Truyện Cổ Tích",
-    classLevel: 1
-  },
-  {
-    id: 2,
-    image:
-      "https://cdnphoto.dantri.com.vn/J--UViBTDTpx6QfI4EBgU3A7yJ0=/zoom/1200_630/NxccccccccccccoFBts62NyN5Dzb54/Image/2015/02/sa1-8edd4.jpg",
-    title: "Bài Học Vui",
-    classLevel: 2
-  },
-  {
-    id: 3,
-    image: "https://live.staticflickr.com/7874/40474155873_8d0ac5580d_z.jpg",
-    title: "Khoa Học Dễ Hiểu",
-    classLevel: 3
-  },
-  {
-    id: 4,
-    image:
-      "https://timviec365.vn/pictures/images_03_2021/dinh-tien-hoang%20(1).jpg",
-    title: "Lịch Sử Thú Vị",
-    classLevel: 4
-  },
-  {
-    id: 5,
-    image:
-      "https://baovannghe.vn/stores/news_dataimages/2024/122024/20/03/truyen-co-tich-tam-cam-1280x76820241220031136.jpg?rt=20241220031138",
-    title: "Văn Học Bé",
-    classLevel: 5
-  }
 ];
 
 // Dữ liệu lớp học
@@ -196,6 +159,7 @@ const HomeScreen = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [showGuideSteps, setShowGuideSteps] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
+  const [topSummaries, setTopSummaries] = useState([]); // State for top 10 summaries
 
   // Kiểm tra xem hướng dẫn đã được hiển thị chưa
   useEffect(() => {
@@ -203,6 +167,21 @@ const HomeScreen = () => {
     if (hasSeenGuide) {
       setShowGuideSteps(false);
     }
+  }, []);
+
+  // Fetch top 10 summaries on mount
+  useEffect(() => {
+    const fetchTopSummaries = async () => {
+      try {
+        const response = await getTop10Summaries();
+        console.log("Top summaries:", response.data);
+        setTopSummaries(response.data); // Assuming response.data contains the summaries array
+      } catch (error) {
+        console.error("Error fetching top summaries:", error);
+        setTopSummaries([]); // Fallback to empty array on error
+      }
+    };
+    fetchTopSummaries();
   }, []);
 
   useEffect(() => {
@@ -448,7 +427,7 @@ const HomeScreen = () => {
           <FaStar className={styles.sectionIcon} /> Bài đọc nổi bật
         </h2>
         <section className={styles.carouselSection}>
-          <SummaryCarousel title="" items={sampleSummaries} />
+          <SummaryCarousel title="" items={topSummaries} />
         </section>
 
         <h2 className={styles.sectionTitle}>

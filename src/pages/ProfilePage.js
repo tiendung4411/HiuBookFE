@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/ProfilePage.module.css";
-import confetti from "canvas-confetti"; // Thêm thư viện confetti
-import Header from "../components/Header"; // Import Header component
+import confetti from "canvas-confetti";
+import Header from "../components/Header";
 import "slick-carousel/slick/slick.css";
-import Slider from 'react-slick';
+import Slider from "react-slick";
 import "slick-carousel/slick/slick-theme.css";
-import { getReadHistoryByUser } from '../api/readHistory';
+import { getReadHistoryByUser } from "../api/readHistory";
+import { getSummariesByContributor } from "../api/summaries";
+import { uploadImageToCloudinary, updateUserProfile } from "../api/users"; // Import new functions
+import { FaCheckCircle, FaHourglassHalf } from "react-icons/fa";
 
 const ProfilePage = () => {
   const [user, setUser] = useState({
@@ -13,97 +16,148 @@ const ProfilePage = () => {
     name: "Bé Mèo Lười",
     grade: "Lớp 3A",
     avatar: "https://via.placeholder.com/150",
-    summaries: 15
+    summaries: 0,
   });
-
-  const [history, setHistory] = useState([
-    { id: 1, text: 'Tóm tắt "Cây khế" - 18/03/2025' },
-    { id: 2, text: 'Tóm tắt "Sơn Tinh Thủy Tinh" - 17/03/2025' }
-  ]);
-
+  const [history, setHistory] = useState([]);
+  const [filteredHistory, setFilteredHistory] = useState([]);
   const [readHistory, setReadHistory] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
+  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [isImageChanged, setIsImageChanged] = useState(false); // Track image changes
   const fileInputRef = useRef(null);
 
-  // Load user data from localStorage on page load
+  // Load user data from localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    console.log("Stored user from localStorage:", storedUser);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      console.log("Parsed user data:", parsedUser);
       setUser({
-        id: parsedUser.userId,
-        name: parsedUser.fullName,
-        grade: parsedUser.grade,
-        avatar: parsedUser.avatarUrl || "https://via.placeholder.com/150",
-        summaries: parsedUser.summaries || 0,
+        id: storedUser.userId,
+        name: storedUser.fullName,
+        grade: storedUser.grade,
+        avatar: storedUser.avatarUrl || "https://via.placeholder.com/150",
+        summaries: storedUser.summaries || 0,
       });
-      console.log("User data loaded from localStorage:", parsedUser);
-    } else {
-      console.log("No user data found in localStorage");
     }
   }, []);
 
-  // Load read history when user ID is available
+  // Fetch summaries and read history
   useEffect(() => {
     if (user.id) {
-      console.log("Loading read history for user:", user.id);
-      getReadHistoryByUser(user.id).then((response) => {
-        console.log("Read history loaded:", response.data);
-        // Lọc trùng lặp dựa trên title
-        const uniqueHistory = response.data
-          .filter(
-            (item, index, self) => 
+      getSummariesByContributor(user.id)
+        .then((response) => {
+          const summaries = response.data;
+          setUser((prevUser) => ({
+            ...prevUser,
+            summaries: summaries.length,
+          }));
+          const formattedHistory = summaries.map((summary) => ({
+            id: summary.summaryId,
+            text: `Tóm tắt "${summary.title}" - ${new Date(
+              summary.createdAt
+            ).toLocaleDateString("vi-VN")}`,
+            status: summary.status,
+          }));
+          setHistory(formattedHistory);
+          setFilteredHistory(formattedHistory);
+        })
+        .catch((error) => {
+          console.error("Error fetching summaries:", error);
+          setHistory([]);
+          setFilteredHistory([]);
+          setUser((prevUser) => ({ ...prevUser, summaries: 0 }));
+        });
+
+      getReadHistoryByUser(user.id)
+        .then((response) => {
+          const uniqueHistory = response.data.filter(
+            (item, index, self) =>
               index === self.findIndex((t) => t.title === item.title)
           );
-        setReadHistory(uniqueHistory);
-      });
+          setReadHistory(uniqueHistory);
+        })
+        .catch((error) => {
+          console.error("Error fetching read history:", error);
+          setReadHistory([]);
+        });
     }
   }, [user.id]);
 
-  // Xử lý upload ảnh đại diện
+  const handleFilter = (status) => {
+    setFilterStatus(status);
+    if (status === "ALL") {
+      setFilteredHistory(history);
+    } else {
+      setFilteredHistory(history.filter((item) => item.status === status));
+    }
+  };
+
   const handleAvatarClick = () => {
-    console.log("Avatar or overlay clicked");
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      console.log("File selected:", file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const newAvatar = reader.result;
-        console.log("New avatar URL:", newAvatar);
-        setUser({ ...user, avatar: newAvatar });
-        setUploadMessage("Upload ảnh thành công! 🎉");
-        // Hiệu ứng confetti khi upload thành công
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ["#1976d2", "#ffca28", "#f06292"]
-        });
+    if (file && user.id) {
+      try {
+        const uploadResponse = await uploadImageToCloudinary(file);
+        if (uploadResponse.success) {
+          const newAvatar = uploadResponse.imageUrl;
+          setUser({ ...user, avatar: newAvatar });
+          setIsImageChanged(true); // Show save button
+          setUploadMessage("Đã tải ảnh lên thành công! 🎉");
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ["#1976d2", "#ffca28", "#f06292"],
+          });
+          setTimeout(() => setUploadMessage(""), 3000);
+        }
+      } catch (error) {
+        setUploadMessage("Lỗi khi tải ảnh lên!");
         setTimeout(() => setUploadMessage(""), 3000);
-      };
-      reader.readAsDataURL(file);
+      }
     }
   };
 
-  const handleUpdateProfile = (updatedUser) => {
-    setUser({ ...user, ...updatedUser });
-    setIsModalOpen(false);
-    // Hiệu ứng confetti khi nhấn "Lưu"
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ["#1976d2", "#ffca28", "#f06292"]
-    });
+  const handleSaveChanges = async () => {
+    if (user.id) {
+      try {
+        const userData = {
+          fullName: user.name,
+          avatarUrl: user.avatar,
+        };
+        const updatedUser = await updateUserProfile(user.id, userData);
+        setUser((prev) => ({ ...prev, ...updatedUser }));
+        setIsImageChanged(false);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUploadMessage("Đã lưu thay đổi thành công!");
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        setTimeout(() => setUploadMessage(""), 3000);
+      } catch (error) {
+        setUploadMessage("Lỗi khi lưu thay đổi!");
+        setTimeout(() => setUploadMessage(""), 3000);
+      }
+    }
+  };
+  
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    const updatedUserData = {
+      fullName: e.target.name.value,
+      avatarUrl: user.avatar,
+    };
+    try {
+      const updatedUser = await updateUserProfile(user.id, updatedUserData);
+      setUser({ ...user, name: updatedUser.fullName });
+      setIsModalOpen(false);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ["#1976d2", "#ffca28", "#f06292"] });
+    } catch (error) {
+      setUploadMessage("Lỗi khi cập nhật thông tin!");
+      setTimeout(() => setUploadMessage(""), 3000);
+    }
   };
 
   const settings = {
@@ -112,34 +166,23 @@ const ProfilePage = () => {
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    // Thêm responsive để điều chỉnh số slide trên các kích thước màn hình
     responsive: [
       {
         breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
+        settings: { slidesToShow: 2, slidesToScroll: 1 },
       },
       {
         breakpoint: 600,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
+        settings: { slidesToShow: 1, slidesToScroll: 1 },
       },
     ],
   };
 
   return (
     <div>
-      {/* Thêm Header */}
       <Header />
-
-      {/* Nội dung trang Profile */}
       <div className={styles.container}>
         <div className={styles.profileSection}>
-          {/* Profile Header */}
           <div className={styles.profileHeader}>
             <div className={styles.avatarWrapper}>
               <img
@@ -179,89 +222,118 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Upload Message */}
           {uploadMessage && (
             <div className={styles.uploadMessage}>{uploadMessage}</div>
           )}
 
-          {/* Profile Stats */}
+          {isImageChanged && (
+            <button
+              className={styles.saveChangesButton}
+              onClick={handleSaveChanges}
+            >
+              Lưu thay đổi
+            </button>
+          )}
+
+          {/* Rest of the component remains the same until the modal */}
           <div className={styles.profileStats}>
             <div className={styles.statItem}>
               <span className={styles.statNumber}>{user.summaries}</span>
-              <span className={styles.statLabel}>Truyện đã tóm tắt</span>
+              <span className={styles.statLabel}>Số bài tóm tắt</span>
             </div>
           </div>
 
-          {/* Profile History */}
+          {/* History and Read History sections remain unchanged */}
           <div className={styles.profileHistory}>
             <h2 className={styles.historyTitle}>Lịch sử tóm tắt</h2>
+            <div className={styles.filterButtons}>
+              <button
+                className={`${styles.filterButton} ${
+                  filterStatus === "ALL" ? styles.active : ""
+                }`}
+                onClick={() => handleFilter("ALL")}
+              >
+                Tất cả
+              </button>
+              <button
+                className={`${styles.filterButton} ${
+                  filterStatus === "APPROVED" ? styles.active : ""
+                }`}
+                onClick={() => handleFilter("APPROVED")}
+              >
+                Đã duyệt
+              </button>
+              <button
+                className={`${styles.filterButton} ${
+                  filterStatus === "PENDING" ? styles.active : ""
+                }`}
+                onClick={() => handleFilter("PENDING")}
+              >
+                Đang chờ
+              </button>
+            </div>
             <div className={styles.historyList}>
-              {history.map((item) => (
-                <div key={item.id} className={styles.historyItem}>
-                  <p className={styles.historyText}>{item.text}</p>
-                </div>
-              ))}
+              {filteredHistory.length > 0 ? (
+                filteredHistory.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`${styles.historyItem} ${
+                      item.status === "APPROVED"
+                        ? styles.approved
+                        : styles.pending
+                    }`}
+                  >
+                    <p className={styles.historyText}>
+                      {item.status === "APPROVED" ? (
+                        <FaCheckCircle className={styles.statusIcon} />
+                      ) : (
+                        <FaHourglassHalf className={styles.statusIcon} />
+                      )}
+                      {item.text}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.emptyMessage}>Chưa có lịch sử tóm tắt.</p>
+              )}
             </div>
           </div>
 
-          {/* Read History Section with Slider */}
           <div className={styles.readHistorySection}>
-  <h2 className={styles.sectionTitle}>Lịch sử đọc</h2>
-  {readHistory.length > 0 ? (
-    <Slider {...settings}>
-      {readHistory.map((item, index) => (
-        <div key={index} className={styles.historyCard}>
-          <div className={styles.historyImageContainer}>
-            <img 
-              src={item.imageUrl || "https://via.placeholder.com/150"} 
-              alt={item.title}
-              className={styles.historyImage}
-            />
+            <h2 className={styles.sectionTitle}>Lịch sử đọc</h2>
+            {readHistory.length > 0 ? (
+              <Slider {...settings}>
+                {readHistory.map((item, index) => (
+                  <div key={index} className={styles.historyCard}>
+                    <div className={styles.historyImageContainer}>
+                      <img
+                        src={item.imageUrl || "https://via.placeholder.com/150"}
+                        alt={item.title}
+                        className={styles.historyImage}
+                      />
+                    </div>
+                    <h3 className={styles.historyTitle}>{item.title}</h3>
+                  </div>
+                ))}
+              </Slider>
+            ) : (
+              <p className={styles.emptyMessage}>Không có lịch sử đọc.</p>
+            )}
           </div>
-          <h3 className={styles.historyTitle}>{item.title}</h3>
-      
-        </div>
-      ))}
-    </Slider>
-  ) : (
-    <p className={styles.emptyMessage}>Không có lịch sử đọc.</p>
-  )}
-</div>
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
       {isModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <h2 className={styles.modalTitle}>Chỉnh sửa Profile</h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const updatedUser = {
-                  name: e.target.name.value,
-                  grade: e.target.grade.value,
-                  avatar: user.avatar
-                };
-                handleUpdateProfile(updatedUser);
-              }}
-            >
+            <form onSubmit={handleUpdateProfile}>
               <div className={styles.formGroup}>
                 <label>Tên:</label>
                 <input
                   type="text"
                   name="name"
                   defaultValue={user.name}
-                  className={styles.textInput}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Lớp:</label>
-                <input
-                  type="text"
-                  name="grade"
-                  defaultValue={user.grade}
                   className={styles.textInput}
                   required
                 />

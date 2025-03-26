@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { searchSummariesByTitle } from "../api/summaries";
+import { searchSummariesByTitleAndGrade } from "../api/summaries";
 import styles from "../styles/SearchModal.module.css";
 import debounce from "lodash/debounce";
 import { FaTimes } from "react-icons/fa";
@@ -12,7 +12,7 @@ const SearchModal = ({ isOpen, onClose }) => {
   const [selectedClass, setSelectedClass] = useState(""); // Lọc theo lớp
   const navigate = useNavigate();
 
-  // Danh sách lớp học
+  // Danh sách lớp học (cũng là cấp độ)
   const classOptions = [
     { value: "", label: "Tất cả lớp" },
     { value: "1", label: "Lớp 1" },
@@ -34,8 +34,8 @@ const SearchModal = ({ isOpen, onClose }) => {
 
   // Hàm tìm kiếm với debounce
   const handleSearch = useCallback(
-    debounce(async (query, classLevel) => {
-      if (query.trim() === "") {
+    debounce(async (query, grade) => {
+      if (query.trim() === "" && grade === "") {
         setSearchResults([]);
         setIsLoading(false);
         return;
@@ -43,15 +43,9 @@ const SearchModal = ({ isOpen, onClose }) => {
 
       setIsLoading(true);
       try {
-        const response = await searchSummariesByTitle(query);
+        const response = await searchSummariesByTitleAndGrade(query, grade);
         if (Array.isArray(response.data)) {
-          let filteredResults = response.data;
-          if (classLevel) {
-            filteredResults = response.data.filter(
-              (result) => result.classLevel === parseInt(classLevel)
-            );
-          }
-          setSearchResults(filteredResults);
+          setSearchResults(response.data);
         } else {
           setSearchResults([]);
         }

@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminHeader from "../components/AdminHeader";
 import StatCard from "../components/StatCard";
-import styles from "../styles/AdminDashboard.module.css"; 
+import styles from "../styles/AdminDashboard.module.css";
 import { getAllSummariesAdmin } from "../../api/summaries";
 import { getAllUsers } from "../../api/users";
-
 import {
   Chart,
   BarController,
@@ -17,11 +16,11 @@ import {
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from "chart.js";
 import { motion } from "framer-motion";
 
-// Đăng ký các thành phần cần thiết cho Chart.js
+// Register Chart.js components
 Chart.register(
   BarController,
   PieController,
@@ -38,11 +37,9 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const gradeChartRef = useRef(null);
   const methodChartRef = useRef(null);
-  const userChartRef = useRef(null);
   const gradeChartInstance = useRef(null);
   const methodChartInstance = useRef(null);
-  const userChartInstance = useRef(null);
-  
+
   const [summaries, setSummaries] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,99 +56,100 @@ const AdminDashboard = () => {
         setLoading(true);
         const [summariesResponse, usersResponse] = await Promise.all([
           getAllSummariesAdmin(),
-          getAllUsers()
+          getAllUsers(),
         ]);
-        
+
         setSummaries(summariesResponse.data);
         setUsers(usersResponse.data);
-        
-        // Calculate today's date in the format YYYY-MM-DD
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Count summaries created today
-        const todaySummaries = summariesResponse.data.filter(summary => 
-          summary.createdAt && summary.createdAt.split('T')[0] === today
+
+        const today = new Date().toISOString().split("T")[0];
+        const todaySummaries = summariesResponse.data.filter(
+          (summary) =>
+            summary.createdAt && summary.createdAt.split("T")[0] === today
         ).length;
-        
-        // Update stats
+
         setStatData([
-          { 
-            title: "Tổng số người dùng", 
-            value: usersResponse.data.length.toString(), 
-            color: "#3498db", 
-            icon: "👥" 
+          {
+            title: "Tổng số người dùng",
+            value: usersResponse.data.length.toString(),
+            color: "#3498db",
+            icon: "👥",
           },
-          { 
-            title: "Tổng số tóm tắt", 
-            value: summariesResponse.data.length.toString(), 
-            color: "#2ecc71", 
-            icon: "📝" 
+          {
+            title: "Tổng số tóm tắt",
+            value: summariesResponse.data.length.toString(),
+            color: "#2ecc71",
+            icon: "📝",
           },
-          { 
-            title: "Tóm tắt hôm nay", 
-            value: todaySummaries.toString(), 
-            color: "#e74c3c", 
-            icon: "📅" 
+          {
+            title: "Tóm tắt hôm nay",
+            value: todaySummaries.toString(),
+            color: "#e74c3c",
+            icon: "📅",
           },
         ]);
-        
+
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
 
-  // Dữ liệu tĩnh cho danh sách tóm tắt gần đây
-  const recentSummaries = summaries.slice(0, 5); // Show only the 5 most recent summaries
-  
-  // Dữ liệu cho danh sách người dùng mới
-  const recentUsers = users.slice(0, 5).map(user => ({
+  const recentSummaries = summaries.slice(0, 5);
+  const recentUsers = users.slice(0, 5).map((user) => ({
     id: user.userId || user.id,
     name: user.fullName || user.name,
     email: user.email,
-    date: user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : "23/03/2025"
+    date: user.createdAt
+      ? new Date(user.createdAt).toLocaleDateString("vi-VN")
+      : "23/03/2025",
   }));
 
-  // Vẽ biểu đồ
+  // Render charts
   useEffect(() => {
-    if (!summaries.length || !users.length) return;
-    
-    // Count summaries by grade
+    if (!summaries.length) return;
+
+    // Count summaries by grade (mapping numeric grades to "Lớp X")
     const gradeCount = {
       "Lớp 1": 0,
       "Lớp 2": 0,
       "Lớp 3": 0,
       "Lớp 4": 0,
-      "Lớp 5": 0
+      "Lớp 5": 0,
+      "Khác": 0,
     };
-    
-    summaries.forEach(summary => {
-      if (summary.grade && gradeCount.hasOwnProperty(summary.grade)) {
-        gradeCount[summary.grade]++;
-      }
-    });
-    
-    // Count summaries by method
-    const methodCount = {
-      "extract": 0,
-      "paraphrase": 0
-    };
-    
-    summaries.forEach(summary => {
-      if (summary.method) {
-        if (summary.method.toLowerCase() === "extract") {
-          methodCount.extract++;
-        } else if (summary.method.toLowerCase() === "paraphrase") {
-          methodCount.paraphrase++;
-        }
+
+    summaries.forEach((summary) => {
+      const grade = summary.grade ? String(summary.grade) : null;
+      const normalizedGrade = grade ? `Lớp ${grade}` : "Khác";
+      if (gradeCount.hasOwnProperty(normalizedGrade)) {
+        gradeCount[normalizedGrade]++;
+      } else {
+        gradeCount["Khác"]++;
       }
     });
 
-    // Biểu đồ cột: Số lượng tóm tắt theo lớp học
+    // Count summaries by method (only "Diễn giải" and "Trích xuất")
+    const methodCount = {
+      "Diễn giải": 0,
+      "Trích xuất": 0,
+    };
+
+    summaries.forEach((summary) => {
+      const method = summary.method ? summary.method.toLowerCase() : null;
+      if (method === "paraphrase" || method === "abstractive" || method === "a") {
+        methodCount["Diễn giải"]++;
+      } else if (method === "extractive" || method === "a" || method === "extraction") {
+        methodCount["Trích xuất"]++;
+      }
+      // Ignore any other values or typos
+    });
+
+    // Bar Chart: Số lượng tóm tắt theo lớp học
     if (gradeChartInstance.current) gradeChartInstance.current.destroy();
     if (gradeChartRef.current) {
       gradeChartInstance.current = new Chart(gradeChartRef.current, {
@@ -164,110 +162,61 @@ const AdminDashboard = () => {
               data: Object.values(gradeCount),
               backgroundColor: "#3498db",
               borderColor: "#3498db",
-              borderWidth: 1
-            }
-          ]
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           responsive: true,
           scales: {
             y: {
               beginAtZero: true,
-              title: { display: true, text: "Số lượng" }
+              title: { display: true, text: "Số lượng" },
             },
             x: {
-              title: { display: true, text: "Lớp học" }
-            }
+              title: { display: true, text: "Lớp học" },
+            },
           },
           plugins: {
             legend: { display: false },
-            title: { display: true, text: "Số lượng tóm tắt theo lớp học" }
-          }
-        }
+            title: { display: true, text: "Số lượng tóm tắt theo lớp học" },
+          },
+        },
       });
     }
 
-    // Biểu đồ tròn: Tỷ lệ tóm tắt theo kiểu
+    // Pie Chart: Tỷ lệ tóm tắt theo kiểu
     if (methodChartInstance.current) methodChartInstance.current.destroy();
     if (methodChartRef.current) {
       methodChartInstance.current = new Chart(methodChartRef.current, {
         type: "pie",
         data: {
-          labels: ["Trích xuất", "Diễn giải"],
+          labels: ["Diễn giải", "Trích xuất"],
           datasets: [
             {
               label: "Tỷ lệ tóm tắt",
-              data: [methodCount.extract, methodCount.paraphrase],
+              data: [methodCount["Diễn giải"], methodCount["Trích xuất"]],
               backgroundColor: ["#2ecc71", "#f1c40f"],
               borderColor: ["#2ecc71", "#f1c40f"],
-              borderWidth: 1
-            }
-          ]
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           responsive: true,
           plugins: {
             legend: { position: "top" },
-            title: { display: true, text: "Tỷ lệ tóm tắt theo kiểu" }
-          }
-        }
-      });
-    }
-    
-    // Biểu đồ tròn: Phân bố người dùng theo lớp
-    const userGradeCount = {
-      "Lớp 1": 0,
-      "Lớp 2": 0,
-      "Lớp 3": 0,
-      "Lớp 4": 0,
-      "Lớp 5": 0,
-      "Khác": 0
-    };
-    
-    users.forEach(user => {
-      if (user.grade && userGradeCount.hasOwnProperty(user.grade)) {
-        userGradeCount[user.grade]++;
-      } else {
-        userGradeCount["Khác"]++;
-      }
-    });
-    
-    if (userChartInstance.current) userChartInstance.current.destroy();
-    if (userChartRef.current) {
-      userChartInstance.current = new Chart(userChartRef.current, {
-        type: "pie",
-        data: {
-          labels: Object.keys(userGradeCount),
-          datasets: [
-            {
-              label: "Người dùng",
-              data: Object.values(userGradeCount),
-              backgroundColor: [
-                "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#C9CBCF"
-              ],
-              borderColor: [
-                "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#C9CBCF"
-              ],
-              borderWidth: 1
-            }
-          ]
+            title: { display: true, text: "Tỷ lệ tóm tắt theo kiểu" },
+          },
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "Phân bố người dùng theo lớp" }
-          }
-        }
       });
     }
 
     return () => {
       if (gradeChartInstance.current) gradeChartInstance.current.destroy();
       if (methodChartInstance.current) methodChartInstance.current.destroy();
-      if (userChartInstance.current) userChartInstance.current.destroy();
     };
-  }, [summaries, users]);
+  }, [summaries]);
 
   return (
     <div className={styles.container}>
@@ -310,14 +259,6 @@ const AdminDashboard = () => {
             >
               <canvas ref={methodChartRef} id="methodChart"></canvas>
             </motion.div>
-            <motion.div
-              className={styles.chart}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <canvas ref={userChartRef} id="userChart"></canvas>
-            </motion.div>
           </div>
           <motion.div
             className={styles.recentActivity}
@@ -349,14 +290,20 @@ const AdminDashboard = () => {
                         <td>{summary.method}</td>
                         <td>{summary.grade}</td>
                         <td>
-                          <span className={`${styles.status} ${styles[summary.status.toLowerCase()]}`}>
+                          <span
+                            className={`${styles.status} ${
+                              styles[summary.status.toLowerCase()]
+                            }`}
+                          >
                             {summary.status}
                           </span>
                         </td>
                         <td>
                           <button
                             className={styles.viewButton}
-                            onClick={() => navigate(`/admin/summaries/${summary.summaryId}`)}
+                            onClick={() =>
+                              navigate(`/admin/summaries/${summary.summaryId}`)
+                            }
                           >
                             Xem
                           </button>
@@ -399,7 +346,11 @@ const AdminDashboard = () => {
                   {recentUsers.length > 0 ? (
                     recentUsers.map((user) => (
                       <tr key={user.id}>
-                        <td>{typeof user.id === 'string' ? user.id.substring(0, 8) + '...' : user.id}</td>
+                        <td>
+                          {typeof user.id === "string"
+                            ? user.id.substring(0, 8) + "..."
+                            : user.id}
+                        </td>
                         <td>{user.name}</td>
                         <td>{user.email}</td>
                         <td>{user.date}</td>

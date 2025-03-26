@@ -16,7 +16,6 @@ import {
   FaPen
 } from "react-icons/fa";
 import styles from "../styles/DualViewLayout.module.css";
-import summaryPicture from "../assets/images/concao.jpeg";
 import { getSummaryById } from "../api/summaries"; // Import the getSummaryById function
 
 Modal.setAppElement("#root");
@@ -110,8 +109,10 @@ const DualViewLayout = () => {
             title: response.data.title,
             text: response.data.content,
             summaryExtract: response.data.summaryContent,
-            summaryParaphrase: response.data.summaryContent
+            summaryParaphrase: response.data.summaryContent,
+            summaryImage: response.data.imageUrl
           });
+          console.log("Image URL:", response.data.imageUrl);
         } else {
           setError("User not found.");
         }
@@ -191,26 +192,23 @@ const DualViewLayout = () => {
 
   return (
     <div
-      className={`${styles.pageContainer} ${
-        isDarkTheme ? styles.darkTheme : ""
-      }`}
+      className={`${styles.pageContainer} ${isDarkTheme ? styles.darkTheme : ""
+        }`}
     >
       <Header />
       <motion.div className={styles.headerContainer}>
         {isMobile && (
           <div className={styles.tabContainer}>
             <button
-              className={`${styles.tab} ${
-                activeView === "text" ? styles.active : ""
-              }`}
+              className={`${styles.tab} ${activeView === "text" ? styles.active : ""
+                }`}
               onClick={() => setActiveView("text")}
             >
               Truyện
             </button>
             <button
-              className={`${styles.tab} ${
-                activeView === "summary" ? styles.active : ""
-              }`}
+              className={`${styles.tab} ${activeView === "summary" ? styles.active : ""
+                }`}
               onClick={() => setActiveView("summary")}
             >
               Tóm Tắt
@@ -220,9 +218,8 @@ const DualViewLayout = () => {
       </motion.div>
       <div className={styles.contentWrapper}>
         <motion.div
-          className={`${styles.panel} ${styles.textPanel} ${
-            isMobile && activeView !== "text" ? styles.hidden : ""
-          }`}
+          className={`${styles.panel} ${styles.textPanel} ${isMobile && activeView !== "text" ? styles.hidden : ""
+            }`}
           variants={pageVariants}
           initial="hidden"
           animate="visible"
@@ -278,12 +275,12 @@ const DualViewLayout = () => {
               {loading
                 ? "Đang tải..."
                 : storyData.text
-                ? renderTextWithVocab(storyData.text)
-                : "Chưa có nội dung"}
+                  ? renderTextWithVocab(storyData.text)
+                  : "Chưa có nội dung"}
             </div>
             <div className={styles.imageContainer}>
               <motion.img
-                src={summaryPicture}
+                src={storyData.summaryImage || "placeholder-image-url"} // Fallback if no image
                 alt="Hình minh họa"
                 className={styles.summaryImage}
                 onClick={() => setIsImageModalOpen(true)}
@@ -295,34 +292,14 @@ const DualViewLayout = () => {
         </motion.div>
 
         <motion.div
-          className={`${styles.panel} ${styles.summaryPanel} ${
-            isMobile && activeView !== "summary" ? styles.hidden : ""
-          }`}
+          className={`${styles.panel} ${styles.summaryPanel} ${isMobile && activeView !== "summary" ? styles.hidden : ""
+            }`}
           variants={pageVariants}
           initial="hidden"
           animate="visible"
         >
           <h2>Tóm Tắt Vui</h2>
-          {/* <div className={styles.methodSelector}>
-            <motion.button
-              className={`${styles.methodButton} ${
-                summaryMethod === "extract" ? styles.active : ""
-              }`}
-              onClick={() => setSummaryMethod("extract")}
-              whileHover={{ scale: 1.05 }}
-            >
-              <FaStar /> Trích Xuất
-            </motion.button>
-            <motion.button
-              className={`${styles.methodButton} ${
-                summaryMethod === "paraphrase" ? styles.active : ""
-              }`}
-              onClick={() => setSummaryMethod("paraphrase")}
-              whileHover={{ scale: 1.05 }}
-            >
-              <FaPen /> Diễn Giải
-            </motion.button>
-          </div> */}
+         
           <div className={styles.summaryContent}>
             {summaryMethod === "extract" ? (
               <div className={styles.summaryExtractBox}>
@@ -334,7 +311,18 @@ const DualViewLayout = () => {
                 >
                   <FaVolumeUp />
                 </motion.button>
+                <div className={styles.imageContainer}>
+                  <motion.img
+                    src={storyData.summaryImage || "placeholder-image-url"} // Fallback if no image
+                    alt="Hình minh họa"
+                    className={styles.summaryImage}
+                    onClick={() => setIsImageModalOpen(true)}
+                    whileHover={{ scale: 1.05 }}
+                  />
+                  <p className={styles.imageCaption}>Hình minh họa câu chuyện</p>
+                </div>
               </div>
+
             ) : (
               <div className={styles.summaryParaphraseBox}>
                 <p>{loading ? "Đang tải..." : storyData.summaryParaphrase}</p>
@@ -381,7 +369,7 @@ const DualViewLayout = () => {
             <FaTimes />
           </button>
           <img
-            src={summaryPicture}
+            src={storyData.summaryImage || "placeholder-image-url"} // Fallback if no image
             alt="Hình minh họa"
             className={styles.enlargedImage}
           />

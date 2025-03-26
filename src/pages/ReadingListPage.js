@@ -156,44 +156,7 @@ const placeholderImage =
           </button>
         </div>
         <div className={styles.filterSearchContainer}>
-          {/* <div className={styles.filterContainer}>
-            <select
-              value={genreFilter}
-              onChange={handleGenreFilter}
-              className={styles.genreFilter}
-            >
-              <option value="Tất cả">Tất cả thể loại</option>
-              <option value="Cổ tích">Cổ tích</option>
-              <option value="Phiêu lưu">Phiêu lưu</option>
-              <option value="Khoa học">Khoa học</option>
-              <option value="Lịch sử">Lịch sử</option>
-              <option value="Đời thường">Đời thường</option>
-            </select>
-          </div>
-          <div className={styles.filterContainer}>
-            <select
-              value={difficultyFilter}
-              onChange={handleDifficultyFilter}
-              className={styles.genreFilter}
-            >
-              <option value="Tất cả">Tất cả độ khó</option>
-              <option value="Dễ">Dễ</option>
-              <option value="Trung bình">Trung bình</option>
-              <option value="Khó">Khó</option>
-            </select>
-          </div>
-          <div className={styles.filterContainer}>
-            <select
-              value={lengthFilter}
-              onChange={handleLengthFilter}
-              className={styles.genreFilter}
-            >
-              <option value="Tất cả">Tất cả độ dài</option>
-              <option value="Ngắn">Ngắn</option>
-              <option value="Trung bình">Trung bình</option>
-              <option value="Dài">Dài</option>
-            </select>
-          </div> */}
+         
           <div className={styles.searchContainer}>
             <FaSearch className={styles.searchIcon} />
             <input
@@ -237,7 +200,7 @@ const placeholderImage =
                       transition={{ duration: 0.5 }}
                     >
                       <img
-                        src={item.image || placeholderImage}
+                        src={item.imageUrl || placeholderImage}
                         alt={item.title}
                         className={styles.readingImage}
                         onError={(e) => (e.target.src = placeholderImage)}

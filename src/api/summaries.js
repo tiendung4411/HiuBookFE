@@ -49,9 +49,16 @@ export const updateSummaryStatus = (id, status) => {
 export const deleteSummary = (id) => {
   return api.delete(`/summaries/${id}`);
 };
-export const searchSummariesByTitle = (title) => {
+// export const searchSummariesByTitle = (title) => {
+//   return api.get(`/summaries/search`, {
+//     params: { searchTerm: title }
+//   });
+// };
+
+
+export const searchSummariesByTitleAndGrade = (title, grade) => {
   return api.get(`/summaries/search`, {
-    params: { searchTerm: title }
+    params: { searchTerm: title, grade: grade }
   });
 };
 
@@ -75,5 +82,23 @@ export const processPdf = (file) => {
   }).catch(error => {
     console.error("Error processing PDF:", error.response ? error.response.data : error.message);
     throw error; // Re-throw the error for handling in the component
+  });
+};
+
+export const uploadImageToCloudinary = (file) => {
+  console.log("Uploading image:", file.name, "Size:", file.size); // Debug log
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return api.post('/summary-sessions/upload-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }).then(response => {
+    console.log("Image upload response:", response.data); // Debug log
+    return response.data; // Returns { imageUrl, success }
+  }).catch(error => {
+    console.error("Error uploading image:", error.response ? error.response.data : error.message);
+    throw error;
   });
 };

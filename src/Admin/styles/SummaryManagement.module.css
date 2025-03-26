@@ -584,3 +584,35 @@
     font-size: 0.8rem;
   }
 }
+.chartsContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.chart {
+  flex: 1;
+  max-width: 50%;
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.status {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status.approved {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.status.pending {
+  background-color: #e74c3c;
+  color: white;
+}
