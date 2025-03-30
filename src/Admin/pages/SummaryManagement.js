@@ -12,10 +12,19 @@ import {
   FaSortAlphaUp,
   FaTrash,
   FaEye,
+  FaCheck,
+  FaTimes
 } from "react-icons/fa";
 import Modal from "react-modal";
 import { motion, AnimatePresence } from "framer-motion";
-import { getAllSummariesAdmin } from "../../api/summaries";
+import { 
+  getAllSummariesAdmin, 
+  updateSummary, 
+  updateSummaryStatus, 
+  updateSummaryContent, 
+  updateSummaryImage,
+  deleteSummary // Added deleteSummary
+} from "../../api/summaries";
 import {
   Chart,
   BarController,
@@ -26,8 +35,10 @@ import {
   ArcElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 } from "chart.js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Register Chart.js components
 Chart.register(
@@ -50,27 +61,31 @@ const SummaryManagement = () => {
   const methodChartRef = useRef(null);
   const gradeChartInstance = useRef(null);
   const methodChartInstance = useRef(null);
+  const miniChartInstance = useRef(null);
 
   const [summaries, setSummaries] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchCriteria, setSearchCriteria] = useState("title");
   const [methodFilter, setMethodFilter] = useState("All");
   const [classFilter, setClassFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All"); // New status filter
+  const [activeTab, setActiveTab] = useState("PENDING");
   const [dateFilter, setDateFilter] = useState("All");
   const [sortOrder, setSortOrder] = useState("A-Z");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isViewMode, setIsViewMode] = useState(false);
-  const [formData, setFormData] = useState({}); 
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmSummaryId, setConfirmSummaryId] = useState(null);
+  const [formData, setFormData] = useState({});
   const [currentSummary, setCurrentSummary] = useState(null);
   const [selectedSummaries, setSelectedSummaries] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 4;
 
-  // Fetch summaries on mount
   useEffect(() => {
     const fetchSummaries = async () => {
       try {
@@ -86,23 +101,56 @@ const SummaryManagement = () => {
     fetchSummaries();
   }, []);
 
+  // Thêm phím tắt
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.key === "n") {
+        e.preventDefault();
+        openAddModal();
+      }
+      if (e.ctrlKey && e.key === "a" && currentSummary?.status === "PENDING") {
+        e.preventDefault();
+        handleQuickApprove(currentSummary.summaryId);
+      }
+      if (e.ctrlKey && e.key === "r" && currentSummary?.status === "PENDING") {
+        e.preventDefault();
+        handleQuickReject(currentSummary.summaryId);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentSummary]);
+
   // Filter and search summaries
   const filteredSummaries = summaries.filter((summary) => {
+    const searchValue = searchTerm.toLowerCase();
     const matchesSearch =
-      (summary.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (summary.content?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+      (searchCriteria === "title" &&
+        (summary.title?.toLowerCase() || "").includes(searchValue)) ||
+      (searchCriteria === "content" &&
+        (summary.content?.toLowerCase() || "").includes(searchValue)) ||
+      (searchCriteria === "grade" &&
+        (summary.grade?.toString() || "").includes(searchValue)) ||
+      (searchCriteria === "method" &&
+        (summary.method?.toLowerCase() || "").includes(searchValue)) ||
+      (searchCriteria === "status" &&
+        (summary.status?.toLowerCase() || "").includes(searchValue));
     const matchesMethod =
       methodFilter === "All" || summary.method === methodFilter;
-    const matchesClass =
-      classFilter === "All" || summary.grade === classFilter; // Assuming grade is the field
-    const matchesStatus =
-      statusFilter === "All" || summary.status === statusFilter;
+    const matchesClass = classFilter === "All" || summary.grade === classFilter;
+    const matchesStatus = summary.status === activeTab;
     const matchesDate =
       dateFilter === "All" ||
       (dateFilter === "Last7Days" &&
         new Date(summary.createdAt) >=
           new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
-    return matchesSearch && matchesMethod && matchesClass && matchesStatus && matchesDate;
+    return (
+      matchesSearch &&
+      matchesMethod &&
+      matchesClass &&
+      matchesStatus &&
+      matchesDate
+    );
   });
 
   // Sort summaries
@@ -124,31 +172,31 @@ const SummaryManagement = () => {
 
   // Stats
   const totalSummaries = summaries.length;
-  const approvedSummaries = summaries.filter((s) => s.status === "APPROVED").length;
-  const pendingSummaries = summaries.filter((s) => s.status === "PENDING").length;
+  const approvedSummaries = summaries.filter(
+    (s) => s.status === "APPROVED"
+  ).length;
+  const pendingSummaries = summaries.filter(
+    (s) => s.status === "PENDING"
+  ).length;
+  const rejectedSummaries = summaries.filter(
+    (s) => s.status === "REJECTED"
+  ).length;
 
   // Charts
   useEffect(() => {
     if (!summaries.length || loading) return;
 
-    // Grade Bar Chart
     const gradeCount = {
       "Lớp 1": 0,
       "Lớp 2": 0,
       "Lớp 3": 0,
       "Lớp 4": 0,
       "Lớp 5": 0,
-      "Khác": 0,
+      Khác: 0
     };
-
     summaries.forEach((summary) => {
-      const grade = summary.grade ? String(summary.grade) : null;
-      const normalizedGrade = grade ? `Lớp ${grade}` : "Khác";
-      if (gradeCount.hasOwnProperty(normalizedGrade)) {
-        gradeCount[normalizedGrade]++;
-      } else {
-        gradeCount["Khác"]++;
-      }
+      const grade = summary.grade ? `Lớp ${summary.grade}` : "Khác";
+      gradeCount[grade] = (gradeCount[grade] || 0) + 1;
     });
 
     if (gradeChartInstance.current) gradeChartInstance.current.destroy();
@@ -161,40 +209,34 @@ const SummaryManagement = () => {
             {
               label: "Số tóm tắt",
               data: Object.values(gradeCount),
-              backgroundColor: "#3498db",
-              borderColor: "#3498db",
-              borderWidth: 1,
-            },
-          ],
+              backgroundColor: "#3498db"
+            }
+          ]
         },
         options: {
           responsive: true,
           scales: {
-            y: { beginAtZero: true, title: { display: true, text: "Số lượng" } },
-            x: { title: { display: true, text: "Lớp học" } },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Số lượng" }
+            },
+            x: { title: { display: true, text: "Lớp học" } }
           },
           plugins: {
             legend: { display: false },
-            title: { display: true, text: "Số lượng tóm tắt theo lớp học" },
-          },
-        },
+            title: { display: true, text: "Số lượng tóm tắt theo lớp học" }
+          }
+        }
       });
     }
 
-    // Method Pie Chart
-    const methodCount = {
-      "Diễn giải": 0,
-      "Trích xuất": 0,
-    };
-
+    const methodCount = { "Diễn giải": 0, "Trích xuất": 0 };
     summaries.forEach((summary) => {
-      const method = summary.method ? summary.method.toLowerCase() : null;
-      if (method === "paraphrase" || method === "abstractive" || method === "a") {
+      const method = summary.method?.toLowerCase();
+      if (["paraphrase", "abstractive", "a"].includes(method))
         methodCount["Diễn giải"]++;
-      } else if (method === "extractive" || method === "a" || method === "extraction") {
+      else if (["extractive", "e", "extraction"].includes(method))
         methodCount["Trích xuất"]++;
-      }
-      // Ignore any other values or typos
     });
 
     if (methodChartInstance.current) methodChartInstance.current.destroy();
@@ -207,19 +249,17 @@ const SummaryManagement = () => {
             {
               label: "Tỷ lệ tóm tắt",
               data: [methodCount["Diễn giải"], methodCount["Trích xuất"]],
-              backgroundColor: ["#2ecc71", "#f1c40f"],
-              borderColor: ["#2ecc71", "#f1c40f"],
-              borderWidth: 1,
-            },
-          ],
+              backgroundColor: ["#2ecc71", "#f1c40f"]
+            }
+          ]
         },
         options: {
           responsive: true,
           plugins: {
             legend: { position: "top" },
-            title: { display: true, text: "Tỷ lệ tóm tắt theo kiểu" },
-          },
-        },
+            title: { display: true, text: "Tỷ lệ tóm tắt theo kiểu" }
+          }
+        }
       });
     }
 
@@ -243,7 +283,9 @@ const SummaryManagement = () => {
 
   const handleSelectSummary = (id) => {
     setSelectedSummaries((prev) =>
-      prev.includes(id) ? prev.filter((summaryId) => summaryId !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((summaryId) => summaryId !== id)
+        : [...prev, id]
     );
   };
 
@@ -251,10 +293,24 @@ const SummaryManagement = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmBulkDelete = () => {
-    setSummaries(summaries.filter((summary) => !selectedSummaries.includes(summary.summaryId)));
-    setSelectedSummaries([]);
-    setIsDeleteModalOpen(false);
+  const confirmBulkDelete = async () => {
+    try {
+      // Call deleteSummary for each selected summary
+      await Promise.all(
+        selectedSummaries.map((id) => deleteSummary(id))
+      );
+      setSummaries(
+        summaries.filter(
+          (summary) => !selectedSummaries.includes(summary.summaryId)
+        )
+      );
+      setSelectedSummaries([]);
+      setIsDeleteModalOpen(false);
+      toast.success("Đã xóa thành công!");
+    } catch (error) {
+      console.error("Error deleting summaries:", error);
+      toast.error("Xóa thất bại!");
+    }
   };
 
   const openAddModal = () => {
@@ -266,7 +322,7 @@ const SummaryManagement = () => {
       method: "Extract",
       createdAt: new Date().toISOString().split("T")[0],
       content: "",
-      status: "PENDING",
+      status: "PENDING"
     });
     setIsModalOpen(true);
   };
@@ -281,7 +337,7 @@ const SummaryManagement = () => {
       method: summary.method,
       createdAt: summary.createdAt.split("T")[0],
       content: summary.content,
-      status: summary.status,
+      status: summary.status
     });
     setIsModalOpen(true);
   };
@@ -291,10 +347,49 @@ const SummaryManagement = () => {
     setIsViewMode(true);
     setCurrentSummary(summary);
     setIsModalOpen(true);
+
+    setTimeout(() => {
+      const ctx = document.getElementById("miniChart")?.getContext("2d");
+      if (ctx && !miniChartInstance.current) {
+        miniChartInstance.current = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Nội dung gốc", "Nội dung tóm tắt"],
+            datasets: [
+              {
+                data: [
+                  summary.content?.length || 0,
+                  summary.summaryContent?.length || summary.content?.length || 0
+                ],
+                backgroundColor: ["#3498db", "#2ecc71"]
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: "bottom" } }
+          }
+        });
+      }
+    }, 100);
+  };
+
+  const openReviewModal = (summary) => {
+    setCurrentSummary(summary);
+    setIsReviewModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setCurrentSummary(null);
+    if (miniChartInstance.current) {
+      miniChartInstance.current.destroy();
+      miniChartInstance.current = null;
+    }
+  };
+
+  const closeReviewModal = () => {
+    setIsReviewModalOpen(false);
     setCurrentSummary(null);
   };
 
@@ -302,22 +397,46 @@ const SummaryManagement = () => {
     setIsDeleteModalOpen(false);
   };
 
+  const closeConfirmModal = () => {
+    setIsConfirmModalOpen(false);
+    setConfirmAction(null);
+    setConfirmSummaryId(null);
+  };
+
   const handleFormChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFormSubmit = () => {
-    // This would ideally call an API to save the summary; here we simulate it
+  const handleFormSubmit = async () => {
     const newSummary = {
       ...formData,
-      summaryId: isEditMode ? currentSummary.summaryId : Date.now().toString(),
+      summaryId: isEditMode ? currentSummary.summaryId : Date.now().toString()
     };
-    if (isEditMode) {
-      setSummaries(summaries.map((s) => (s.summaryId === currentSummary.summaryId ? newSummary : s)));
-    } else {
-      setSummaries([...summaries, newSummary]);
+    try {
+      if (isEditMode) {
+        await updateSummary(newSummary.summaryId, {
+          title: newSummary.title,
+          grade: newSummary.grade,
+          method: newSummary.method,
+          createdAt: newSummary.createdAt,
+          content: newSummary.content,
+          status: newSummary.status
+        });
+        setSummaries(
+          summaries.map((s) =>
+            s.summaryId === currentSummary.summaryId ? newSummary : s
+          )
+        );
+        toast.success("Đã cập nhật thành công!");
+      } else {
+        setSummaries([...summaries, newSummary]);
+        toast.success("Đã thêm thành công!");
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Error updating summary:", error);
+      toast.error("Cập nhật thất bại!");
     }
-    closeModal();
   };
 
   const handleDelete = (id) => {
@@ -325,21 +444,124 @@ const SummaryManagement = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+  const handleApprove = async () => {
+    if (!currentSummary) return;
+    try {
+      await updateSummaryStatus(currentSummary.summaryId, "APPROVED");
+      setSummaries((prev) =>
+        prev.map((s) =>
+          s.summaryId === currentSummary.summaryId
+            ? { ...s, status: "APPROVED" }
+            : s
+        )
+      );
+      setIsReviewModalOpen(false);
+      toast.success("Đã duyệt thành công!");
+    } catch (error) {
+      console.error("Error approving summary:", error);
+      toast.error("Duyệt thất bại!");
+    }
+  };
+
+  const handleReject = async () => {
+    if (!currentSummary) return;
+    try {
+      await updateSummaryStatus(currentSummary.summaryId, "REJECTED");
+      setSummaries((prev) =>
+        prev.map((s) =>
+          s.summaryId === currentSummary.summaryId
+            ? { ...s, status: "REJECTED" }
+            : s
+        )
+      );
+      setIsReviewModalOpen(false);
+      toast.success("Đã từ chối thành công!");
+    } catch (error) {
+      console.error("Error rejecting summary:", error);
+      toast.error("Từ chối thất bại!");
+    }
+  };
+
+  const handleQuickApprove = async (id) => {
+    setConfirmAction("approve");
+    setConfirmSummaryId(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleQuickReject = async (id) => {
+    setConfirmAction("reject");
+    setConfirmSummaryId(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmQuickAction = async () => {
+    if (!confirmSummaryId || !confirmAction) return;
+    try {
+      if (confirmAction === "approve") {
+        await updateSummaryStatus(confirmSummaryId, "APPROVED");
+        setSummaries((prev) =>
+          prev.map((s) =>
+            s.summaryId === confirmSummaryId ? { ...s, status: "APPROVED" } : s
+          )
+        );
+        toast.success("Đã duyệt nhanh thành công!");
+      } else if (confirmAction === "reject") {
+        await updateSummaryStatus(confirmSummaryId, "REJECTED");
+        setSummaries((prev) =>
+          prev.map((s) =>
+            s.summaryId === confirmSummaryId ? { ...s, status: "REJECTED" } : s
+          )
+        );
+        toast.success("Đã từ chối nhanh thành công!");
+      }
+    } catch (error) {
+      console.error(`Error ${confirmAction}ing summary:`, error);
+      toast.error(
+        `${confirmAction === "approve" ? "Duyệt" : "Từ chối"} thất bại!`
+      );
+    } finally {
+      closeConfirmModal();
+    }
+  };
+
+  const handleUpdateContent = async (id, title, content) => {
+    try {
+      await updateSummaryContent(id, title, content);
+      setSummaries((prev) =>
+        prev.map((s) =>
+          s.summaryId === id ? { ...s, title, content } : s
+        )
+      );
+      toast.success("Đã cập nhật nội dung thành công!");
+    } catch (error) {
+      console.error("Error updating summary content:", error);
+      toast.error("Cập nhật nội dung thất bại!");
+    }
+  };
+
+  const handleUpdateImage = async (id, imageUrl) => {
+    try {
+      await updateSummaryImage(id, imageUrl);
+      setSummaries((prev) =>
+        prev.map((s) =>
+          s.summaryId === id ? { ...s, imageUrl } : s
+        )
+      );
+      toast.success("Đã cập nhật hình ảnh thành công!");
+    } catch (error) {
+      console.error("Error updating summary image:", error);
+      toast.error("Cập nhật hình ảnh thất bại!");
+    }
   };
 
   return (
-    <div className={`${styles.container} ${isDarkMode ? styles.darkMode : ""}`}>
+    <div className={styles.container}>
       <AdminSidebar />
       <div className={styles.main}>
         <AdminHeader />
         <div className={styles.content}>
           <div className={styles.header}>
             <h1 className={styles.title}>Quản Lý Tóm Tắt</h1>
-            <button className={styles.themeButton} onClick={toggleTheme}>
-              {isDarkMode ? "Chuyển sang sáng" : "Chuyển sang tối"}
-            </button>
           </div>
           <div className={styles.statsContainer}>
             <StatCard
@@ -359,6 +581,12 @@ const SummaryManagement = () => {
               value={pendingSummaries}
               color="#e74c3c"
               icon="⏳"
+            />
+            <StatCard
+              title="Tóm tắt Bị từ chối"
+              value={rejectedSummaries}
+              color="#f39c12"
+              icon="❌"
             />
           </div>
           <div className={styles.chartsContainer}>
@@ -381,9 +609,20 @@ const SummaryManagement = () => {
           </div>
           <div className={styles.controls}>
             <div className={styles.search}>
+              <select
+                value={searchCriteria}
+                onChange={(e) => setSearchCriteria(e.target.value)}
+                className={styles.searchCriteria}
+              >
+                <option value="title">Tiêu đề</option>
+                <option value="content">Nội dung</option>
+                <option value="grade">Lớp học</option>
+                <option value="method">Kiểu</option>
+                <option value="status">Trạng thái</option>
+              </select>
               <input
                 type="text"
-                placeholder="Tìm kiếm theo tiêu đề hoặc nội dung..."
+                placeholder={`Tìm kiếm theo ${searchCriteria}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -412,15 +651,6 @@ const SummaryManagement = () => {
                 <option value="5">Lớp 5</option>
               </select>
               <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className={styles.filterSelect}
-              >
-                <option value="All">Tất cả trạng thái</option>
-                <option value="APPROVED">Đã duyệt</option>
-                <option value="PENDING">Chờ duyệt</option>
-              </select>
-              <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
                 className={styles.filterSelect}
@@ -434,6 +664,43 @@ const SummaryManagement = () => {
               </button>
             </div>
           </div>
+
+          <div className={styles.tabContainer}>
+            <button
+              className={`${styles.tabButton} ${
+                activeTab === "PENDING" ? styles.activeTab : ""
+              }`}
+              onClick={() => {
+                setActiveTab("PENDING");
+                setCurrentPage(1);
+              }}
+            >
+              Chờ duyệt ({pendingSummaries})
+            </button>
+            <button
+              className={`${styles.tabButton} ${
+                activeTab === "APPROVED" ? styles.activeTab : ""
+              }`}
+              onClick={() => {
+                setActiveTab("APPROVED");
+                setCurrentPage(1);
+              }}
+            >
+              Đã duyệt ({approvedSummaries})
+            </button>
+            <button
+              className={`${styles.tabButton} ${
+                activeTab === "REJECTED" ? styles.activeTab : ""
+              }`}
+              onClick={() => {
+                setActiveTab("REJECTED");
+                setCurrentPage(1);
+              }}
+            >
+              Bị từ chối ({rejectedSummaries})
+            </button>
+          </div>
+
           {selectedSummaries.length > 0 && (
             <motion.div
               className={styles.bulkActions}
@@ -470,7 +737,9 @@ const SummaryManagement = () => {
                       setSelectedSummaries(
                         selectedSummaries.length === paginatedSummaries.length
                           ? []
-                          : paginatedSummaries.map((summary) => summary.summaryId)
+                          : paginatedSummaries.map(
+                              (summary) => summary.summaryId
+                            )
                       )
                     }
                   />
@@ -482,7 +751,11 @@ const SummaryManagement = () => {
                     onClick={toggleSortOrder}
                     className={styles.sortButton}
                   >
-                    {sortOrder === "A-Z" ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
+                    {sortOrder === "A-Z" ? (
+                      <FaSortAlphaDown />
+                    ) : (
+                      <FaSortAlphaUp />
+                    )}
                   </button>
                 </th>
                 <th>Lớp học</th>
@@ -490,12 +763,13 @@ const SummaryManagement = () => {
                 <th>Ngày tạo</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
+                <th>Duyệt</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="8" className={styles.noData}>
+                  <td colSpan="9" className={styles.noData}>
                     Đang tải dữ liệu...
                   </td>
                 </tr>
@@ -515,23 +789,42 @@ const SummaryManagement = () => {
                       />
                     </td>
                     <td>{summary.summaryId.substring(0, 8)}...</td>
-                    <td>{summary.title}</td>
+                    <td>
+                      <div className={styles.tooltip}>
+                        {summary.title}
+                        <span className={styles.tooltipText}>
+                          {summary.content || "Không có nội dung"}
+                        </span>
+                      </div>
+                    </td>
                     <td>{summary.grade}</td>
                     <td>{summary.method}</td>
                     <td>{summary.createdAt.split("T")[0]}</td>
                     <td>
                       <span
                         className={`${styles.status} ${
-                          summary.status === "APPROVED" ? styles.approved : styles.pending
+                          summary.status === "APPROVED"
+                            ? styles.approved
+                            : summary.status === "REJECTED"
+                            ? styles.rejected
+                            : styles.pending
                         }`}
                       >
-                        {summary.status === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"}
+                        {summary.status === "APPROVED"
+                          ? "Đã duyệt"
+                          : summary.status === "REJECTED"
+                          ? "Bị từ chối"
+                          : "Chờ duyệt"}
                       </span>
                     </td>
                     <td>
                       <button
                         className={styles.viewButton}
-                        onClick={() => openViewModal(summary)}
+                        onClick={() =>
+                          summary.status === "PENDING"
+                            ? openReviewModal(summary)
+                            : openViewModal(summary)
+                        }
                       >
                         <FaEye />
                       </button>
@@ -545,14 +838,36 @@ const SummaryManagement = () => {
                         className={styles.deleteButton}
                         onClick={() => handleDelete(summary.summaryId)}
                       >
-                        Xóa
+                        <FaTrash />
                       </button>
+                    </td>
+                    <td>
+                      {summary.status === "PENDING" ? (
+                        <div className={styles.quickActions}>
+                          <button
+                            className={styles.quickApproveButton}
+                            onClick={() =>
+                              handleQuickApprove(summary.summaryId)
+                            }
+                          >
+                            <FaCheck />
+                          </button>
+                          <button
+                            className={styles.quickRejectButton}
+                            onClick={() => handleQuickReject(summary.summaryId)}
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                   </motion.tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className={styles.noData}>
+                  <td colSpan="9" className={styles.noData}>
                     Không có dữ liệu tóm tắt
                   </td>
                 </tr>
@@ -603,13 +918,38 @@ const SummaryManagement = () => {
           </h2>
           {isViewMode ? (
             <div className={styles.viewDetails}>
-              <p><strong>ID:</strong> {currentSummary?.summaryId}</p>
-              <p><strong>Tiêu đề:</strong> {currentSummary?.title}</p>
-              <p><strong>Lớp học:</strong> {currentSummary?.grade}</p>
-              <p><strong>Kiểu:</strong> {currentSummary?.method}</p>
-              <p><strong>Ngày tạo:</strong> {currentSummary?.createdAt.split("T")[0]}</p>
-              <p><strong>Trạng thái:</strong> {currentSummary?.status}</p>
-              <p><strong>Nội dung:</strong> {currentSummary?.content}</p>
+              <p>
+                <strong>ID:</strong> {currentSummary?.summaryId}
+              </p>
+              <p>
+                <strong>Tiêu đề:</strong> {currentSummary?.title}
+              </p>
+              <p>
+                <strong>Lớp học:</strong> {currentSummary?.grade}
+              </p>
+              <p>
+                <strong>Kiểu:</strong> {currentSummary?.method}
+              </p>
+              <p>
+                <strong>Ngày tạo:</strong>{" "}
+                {currentSummary?.createdAt.split("T")[0]}
+              </p>
+              <p>
+                <strong>Trạng thái:</strong> {currentSummary?.status}
+              </p>
+              <p>
+                <strong>Nội dung:</strong> {currentSummary?.content}
+              </p>
+              <canvas id="miniChart" className={styles.miniChart}></canvas>
+              {currentSummary?.imageUrl && (
+                <div className={styles.modalImageContainer}>
+                  <img
+                    src={currentSummary.imageUrl}
+                    alt="Hình ảnh tóm tắt"
+                    className={styles.modalImage}
+                  />
+                </div>
+              )}
               <button onClick={closeModal} className={styles.cancelButton}>
                 Đóng
               </button>
@@ -678,6 +1018,7 @@ const SummaryManagement = () => {
                 >
                   <option value="PENDING">Chờ duyệt</option>
                   <option value="APPROVED">Đã duyệt</option>
+                  <option value="REJECTED">Bị từ chối</option>
                 </select>
               </div>
               <div className={styles.formGroup}>
@@ -704,6 +1045,92 @@ const SummaryManagement = () => {
               </div>
             </form>
           )}
+        </motion.div>
+      </Modal>
+
+      {/* Modal for Review */}
+      <Modal
+        isOpen={isReviewModalOpen}
+        onRequestClose={closeReviewModal}
+        className={styles.modal}
+        overlayClassName={styles.modalOverlay}
+      >
+        <motion.div
+          className={styles.modalContent}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h2>Duyệt Bản Tóm Tắt</h2>
+          <div className={styles.reviewDetails}>
+            <div className={styles.detailSection}>
+              <h3>Thông Tin Chung</h3>
+              <p>
+                <strong>Tiêu đề:</strong>{" "}
+                {currentSummary?.title || "Chưa có tiêu đề"}
+              </p>
+              <p>
+                <strong>Lớp học:</strong>{" "}
+                {currentSummary?.grade || "Không xác định"}
+              </p>
+              <p>
+                <strong>Kiểu tóm tắt:</strong>{" "}
+                {currentSummary?.method || "Không xác định"}
+              </p>
+              <p>
+                <strong>Ngày tạo:</strong>{" "}
+                {currentSummary?.createdAt?.split("T")[0] || "Không xác định"}
+              </p>
+              <p>
+                <strong>Trạng thái:</strong>{" "}
+                {currentSummary?.status === "PENDING"
+                  ? "Chờ duyệt"
+                  : currentSummary?.status === "APPROVED"
+                  ? "Đã duyệt"
+                  : "Bị từ chối"}
+              </p>
+            </div>
+            <div className={styles.detailSection}>
+              <h3>Nội Dung Gốc</h3>
+              <div className={styles.contentBox}>
+                <p>{currentSummary?.content || "Không có nội dung gốc"}</p>
+              </div>
+            </div>
+            <div className={styles.detailSection}>
+              <h3>Nội Dung Tóm Tắt</h3>
+              <div className={styles.contentBox}>
+                <p>
+                  {currentSummary?.summaryContent ||
+                    "Không có nội dung tóm tắt"}
+                </p>
+              </div>
+            </div>
+            {currentSummary?.imageUrl && (
+              <div className={styles.detailSection}>
+                <h3>Hình Ảnh</h3>
+                <div className={styles.modalImageContainer}>
+                  <img
+                    src={currentSummary.imageUrl}
+                    alt="Hình ảnh tóm tắt"
+                    className={styles.modalImage}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          {currentSummary?.status === "PENDING" && (
+            <div className={styles.modalButtons}>
+              <button className={styles.approveButton} onClick={handleApprove}>
+                Duyệt
+              </button>
+              <button className={styles.rejectButton} onClick={handleReject}>
+                Từ chối
+              </button>
+            </div>
+          )}
+          <button onClick={closeReviewModal} className={styles.cancelButton}>
+            Đóng
+          </button>
         </motion.div>
       </Modal>
 
@@ -737,6 +1164,40 @@ const SummaryManagement = () => {
           </div>
         </motion.div>
       </Modal>
+
+      {/* Confirm Action Modal (Duyệt/Từ chối nhanh) */}
+      <Modal
+        isOpen={isConfirmModalOpen}
+        onRequestClose={closeConfirmModal}
+        className={styles.deleteModal}
+        overlayClassName={styles.modalOverlay}
+      >
+        <motion.div
+          className={styles.deleteModalContent}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h2>Xác nhận hành động</h2>
+          <p>
+            Bạn có chắc muốn {confirmAction === "approve" ? "duyệt" : "từ chối"}{" "}
+            bản tóm tắt này không?
+          </p>
+          <div className={styles.modalButtons}>
+            <button
+              onClick={confirmQuickAction}
+              className={styles.confirmActionButton}
+            >
+              Xác nhận
+            </button>
+            <button onClick={closeConfirmModal} className={styles.cancelButton}>
+              Hủy
+            </button>
+          </div>
+        </motion.div>
+      </Modal>
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

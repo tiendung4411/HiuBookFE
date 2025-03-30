@@ -1,14 +1,24 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import styles from "../styles/ProfilePage.module.css";
 import confetti from "canvas-confetti";
 import Header from "../components/Header";
-import "slick-carousel/slick/slick.css";
 import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { getReadHistoryByUser } from "../api/readHistory";
 import { getSummariesByContributor } from "../api/summaries";
-import { uploadImageToCloudinary, updateUserProfile } from "../api/users"; // Import new functions
-import { FaCheckCircle, FaHourglassHalf } from "react-icons/fa";
+import { uploadImageToCloudinary, updateUserProfile } from "../api/users";
+import {
+  FaCheckCircle,
+  FaHourglassHalf,
+  FaShareAlt,
+  FaTrash,
+  FaTimesCircle,
+  FaSearch,
+  FaTimes,
+  FaSortAlphaDown,
+  FaSortAlphaUp
+} from "react-icons/fa";
 
 const ProfilePage = () => {
   const [user, setUser] = useState({
@@ -16,7 +26,7 @@ const ProfilePage = () => {
     name: "Bé Mèo Lười",
     grade: "Lớp 3A",
     avatar: "https://via.placeholder.com/150",
-    summaries: 0,
+    summaries: 0
   });
   const [history, setHistory] = useState([]);
   const [filteredHistory, setFilteredHistory] = useState([]);
@@ -24,10 +34,14 @@ const ProfilePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const [filterStatus, setFilterStatus] = useState("ALL");
-  const [isImageChanged, setIsImageChanged] = useState(false); // Track image changes
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isImageChanged, setIsImageChanged] = useState(false);
+  const [selectedSummary, setSelectedSummary] = useState(null);
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState("desc"); // Thêm tính năng sắp xếp
   const fileInputRef = useRef(null);
 
-  // Load user data from localStorage
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
@@ -36,86 +50,111 @@ const ProfilePage = () => {
         name: storedUser.fullName,
         grade: storedUser.grade,
         avatar: storedUser.avatarUrl || "https://via.placeholder.com/150",
-        summaries: storedUser.summaries || 0,
+        summaries: storedUser.summaries || 0
       });
     }
   }, []);
 
-  // Fetch summaries and read history
   useEffect(() => {
     if (user.id) {
-      getSummariesByContributor(user.id)
-        .then((response) => {
-          const summaries = response.data;
-          setUser((prevUser) => ({
-            ...prevUser,
-            summaries: summaries.length,
-          }));
-          const formattedHistory = summaries.map((summary) => ({
+      getSummariesByContributor(user.id).then((response) => {
+        const summaries = response.data;
+        const formattedHistory = summaries
+          .map((summary) => ({
             id: summary.summaryId,
             text: `Tóm tắt "${summary.title}" - ${new Date(
               summary.createdAt
             ).toLocaleDateString("vi-VN")}`,
+            title: summary.title,
             status: summary.status,
-          }));
-          setHistory(formattedHistory);
-          setFilteredHistory(formattedHistory);
-        })
-        .catch((error) => {
-          console.error("Error fetching summaries:", error);
-          setHistory([]);
-          setFilteredHistory([]);
-          setUser((prevUser) => ({ ...prevUser, summaries: 0 }));
-        });
+            content: summary.content,
+            summaryContent: summary.summaryContent,
+            imageUrl: summary.imageUrl || "https://via.placeholder.com/150",
+            shareLink: `https://example.com/summary/${summary.summaryId}`,
+            createdAt: new Date(summary.createdAt)
+          }))
+          .sort((a, b) => b.createdAt - a.createdAt);
+        setHistory(formattedHistory);
+        setFilteredHistory(formattedHistory);
+        setUser((prev) => ({ ...prev, summaries: summaries.length }));
+      });
 
-      getReadHistoryByUser(user.id)
-        .then((response) => {
-          const uniqueHistory = response.data.filter(
-            (item, index, self) =>
-              index === self.findIndex((t) => t.title === item.title)
-          );
-          setReadHistory(uniqueHistory);
-        })
-        .catch((error) => {
-          console.error("Error fetching read history:", error);
-          setReadHistory([]);
-        });
+      getReadHistoryByUser(user.id).then((response) => {
+        const uniqueHistory = [
+          ...new Map(response.data.map((item) => [item.title, item])).values()
+        ];
+        setReadHistory(uniqueHistory);
+      });
     }
   }, [user.id]);
 
-  const handleFilter = (status) => {
-    setFilterStatus(status);
-    if (status === "ALL") {
-      setFilteredHistory(history);
-    } else {
-      setFilteredHistory(history.filter((item) => item.status === status));
-    }
+  const stats = useMemo(
+    () => ({
+      total: history.length,
+      approved: history.filter((item) => item.status === "APPROVED").length,
+      pending: history.filter((item) => item.status === "PENDING").length,
+      rejected: history.filter((item) => item.status === "REJECTED").length,
+      avgTime: history.length
+        ? (
+            history.reduce(
+              (acc, item) => acc + new Date(item.createdAt).getTime(),
+              0
+            ) / history.length
+          ).toFixed(0)
+        : 0
+    }),
+    [history]
+  );
+
+  const applyFiltersAndSort = () => {
+    let filtered = [...history];
+    if (filterStatus !== "ALL")
+      filtered = filtered.filter((item) => item.status === filterStatus);
+    if (selectedDate)
+      filtered = filtered.filter(
+        (item) =>
+          new Date(item.createdAt).toDateString() ===
+          selectedDate.toDateString()
+      );
+    if (searchQuery)
+      filtered = filtered.filter((item) =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    filtered.sort((a, b) =>
+      sortOrder === "asc"
+        ? a.title.localeCompare(b.title)
+        : b.title.localeCompare(a.title)
+    );
+    setFilteredHistory(filtered);
   };
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
+  useEffect(() => {
+    applyFiltersAndSort();
+  }, [filterStatus, selectedDate, searchQuery, sortOrder, history]);
+
+  const handleFilter = (status) => setFilterStatus(status);
+  const handleDateChange = (e) =>
+    setSelectedDate(e.target.value ? new Date(e.target.value) : null);
+  const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  const toggleSortOrder = () =>
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  const clearFilters = () => {
+    setFilterStatus("ALL");
+    setSelectedDate(null);
+    setSearchQuery("");
+    setSortOrder("desc");
   };
 
+  const handleAvatarClick = () => fileInputRef.current?.click();
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (file && user.id) {
-      try {
-        const uploadResponse = await uploadImageToCloudinary(file);
-        if (uploadResponse.success) {
-          const newAvatar = uploadResponse.imageUrl;
-          setUser({ ...user, avatar: newAvatar });
-          setIsImageChanged(true); // Show save button
-          setUploadMessage("Đã tải ảnh lên thành công! 🎉");
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ["#1976d2", "#ffca28", "#f06292"],
-          });
-          setTimeout(() => setUploadMessage(""), 3000);
-        }
-      } catch (error) {
-        setUploadMessage("Lỗi khi tải ảnh lên!");
+      const uploadResponse = await uploadImageToCloudinary(file);
+      if (uploadResponse.success) {
+        setUser((prev) => ({ ...prev, avatar: uploadResponse.imageUrl }));
+        setIsImageChanged(true);
+        setUploadMessage("Đã tải ảnh lên thành công! 🎉");
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         setTimeout(() => setUploadMessage(""), 3000);
       }
     }
@@ -123,40 +162,49 @@ const ProfilePage = () => {
 
   const handleSaveChanges = async () => {
     if (user.id) {
-      try {
-        const userData = {
-          fullName: user.name,
-          avatarUrl: user.avatar,
-        };
-        const updatedUser = await updateUserProfile(user.id, userData);
-        setUser((prev) => ({ ...prev, ...updatedUser }));
-        setIsImageChanged(false);
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        setUploadMessage("Đã lưu thay đổi thành công!");
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        setTimeout(() => setUploadMessage(""), 3000);
-      } catch (error) {
-        setUploadMessage("Lỗi khi lưu thay đổi!");
-        setTimeout(() => setUploadMessage(""), 3000);
-      }
+      const userData = { fullName: user.name, avatarUrl: user.avatar };
+      const updatedUser = await updateUserProfile(user.id, userData);
+      setUser((prev) => ({ ...prev, ...updatedUser }));
+      setIsImageChanged(false);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUploadMessage("Đã lưu thay đổi thành công!");
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      setTimeout(() => setUploadMessage(""), 3000);
     }
   };
-  
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     const updatedUserData = {
       fullName: e.target.name.value,
-      avatarUrl: user.avatar,
+      avatarUrl: user.avatar
     };
-    try {
-      const updatedUser = await updateUserProfile(user.id, updatedUserData);
-      setUser({ ...user, name: updatedUser.fullName });
-      setIsModalOpen(false);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ["#1976d2", "#ffca28", "#f06292"] });
-    } catch (error) {
-      setUploadMessage("Lỗi khi cập nhật thông tin!");
-      setTimeout(() => setUploadMessage(""), 3000);
+    const updatedUser = await updateUserProfile(user.id, updatedUserData);
+    setUser((prev) => ({ ...prev, name: updatedUser.fullName }));
+    setIsModalOpen(false);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  };
+
+  const handleSummaryClick = (summary) => {
+    setSelectedSummary(summary);
+    setIsSummaryModalOpen(true);
+  };
+
+  const handleShare = (link) => {
+    navigator.clipboard.writeText(link);
+    setUploadMessage("Đã sao chép link tóm tắt!");
+    setTimeout(() => setUploadMessage(""), 2000);
+  };
+
+  const handleDelete = (summaryId) => {
+    if (window.confirm("Bạn có chắc muốn xóa tóm tắt này không?")) {
+      const updatedHistory = history.filter((item) => item.id !== summaryId);
+      setHistory(updatedHistory);
+      applyFiltersAndSort();
+      setIsSummaryModalOpen(false);
+      setUploadMessage("Đã xóa tóm tắt!");
+      setTimeout(() => setUploadMessage(""), 2000);
     }
   };
 
@@ -167,15 +215,9 @@ const ProfilePage = () => {
     slidesToShow: 3,
     slidesToScroll: 1,
     responsive: [
-      {
-        breakpoint: 1024,
-        settings: { slidesToShow: 2, slidesToScroll: 1 },
-      },
-      {
-        breakpoint: 600,
-        settings: { slidesToShow: 1, slidesToScroll: 1 },
-      },
-    ],
+      { breakpoint: 1024, settings: { slidesToShow: 2 } },
+      { breakpoint: 600, settings: { slidesToShow: 1 } }
+    ]
   };
 
   return (
@@ -235,62 +277,110 @@ const ProfilePage = () => {
             </button>
           )}
 
-          {/* Rest of the component remains the same until the modal */}
           <div className={styles.profileStats}>
             <div className={styles.statItem}>
-              <span className={styles.statNumber}>{user.summaries}</span>
-              <span className={styles.statLabel}>Số bài tóm tắt</span>
+              <span className={styles.statNumber}>{stats.total}</span>
+              <span className={styles.statLabel}>Tổng bài tóm tắt</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statNumber}>{stats.approved}</span>
+              <span className={styles.statLabel}>Đã duyệt</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statNumber}>{stats.pending}</span>
+              <span className={styles.statLabel}>Đang chờ</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statNumber}>{stats.rejected}</span>
+              <span className={styles.statLabel}>Từ chối</span>
             </div>
           </div>
 
-          {/* History and Read History sections remain unchanged */}
           <div className={styles.profileHistory}>
             <h2 className={styles.historyTitle}>Lịch sử tóm tắt</h2>
-            <div className={styles.filterButtons}>
-              <button
-                className={`${styles.filterButton} ${
-                  filterStatus === "ALL" ? styles.active : ""
-                }`}
-                onClick={() => handleFilter("ALL")}
-              >
-                Tất cả
-              </button>
-              <button
-                className={`${styles.filterButton} ${
-                  filterStatus === "APPROVED" ? styles.active : ""
-                }`}
-                onClick={() => handleFilter("APPROVED")}
-              >
-                Đã duyệt
-              </button>
-              <button
-                className={`${styles.filterButton} ${
-                  filterStatus === "PENDING" ? styles.active : ""
-                }`}
-                onClick={() => handleFilter("PENDING")}
-              >
-                Đang chờ
-              </button>
+            <div className={styles.filterSection}>
+              <div className={styles.filterButtons}>
+                {["ALL", "APPROVED", "PENDING", "REJECTED"].map((status) => (
+                  <button
+                    key={status}
+                    className={`${styles.filterButton} ${
+                      filterStatus === status ? styles.active : ""
+                    }`}
+                    onClick={() => handleFilter(status)}
+                  >
+                    {status === "ALL"
+                      ? "Tất cả"
+                      : status === "APPROVED"
+                      ? "Đã duyệt"
+                      : status === "PENDING"
+                      ? "Đang chờ"
+                      : "Từ chối"}{" "}
+                    ({stats[status.toLowerCase()] || stats.total})
+                  </button>
+                ))}
+              </div>
+              <div className={styles.searchFilter}>
+                <FaSearch className={styles.searchIcon} />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tiêu đề..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className={styles.searchInput}
+                />
+                <button className={styles.sortButton} onClick={toggleSortOrder}>
+                  {sortOrder === "asc" ? (
+                    <FaSortAlphaUp />
+                  ) : (
+                    <FaSortAlphaDown />
+                  )}
+                </button>
+              </div>
+              <div className={styles.dateFilter}>
+                <input
+                  type="date"
+                  onChange={handleDateChange}
+                  value={
+                    selectedDate ? selectedDate.toISOString().split("T")[0] : ""
+                  }
+                  className={styles.dateInput}
+                />
+              </div>
+              {(filterStatus !== "ALL" || selectedDate || searchQuery) && (
+                <button
+                  className={styles.clearFilterButton}
+                  onClick={clearFilters}
+                >
+                  <FaTimes /> Xóa bộ lọc
+                </button>
+              )}
             </div>
-            <div className={styles.historyList}>
-              {filteredHistory.length > 0 ? (
+            <div className={styles.timeline}>
+              {filteredHistory.length ? (
                 filteredHistory.map((item) => (
                   <div
                     key={item.id}
-                    className={`${styles.historyItem} ${
+                    className={`${styles.timelineItem} ${
                       item.status === "APPROVED"
                         ? styles.approved
+                        : item.status === "REJECTED"
+                        ? styles.rejected
                         : styles.pending
                     }`}
+                    onClick={() => handleSummaryClick(item)}
                   >
-                    <p className={styles.historyText}>
+                    <div className={styles.timelineIcon}>
                       {item.status === "APPROVED" ? (
-                        <FaCheckCircle className={styles.statusIcon} />
+                        <FaCheckCircle />
+                      ) : item.status === "REJECTED" ? (
+                        <FaTimesCircle />
                       ) : (
-                        <FaHourglassHalf className={styles.statusIcon} />
+                        <FaHourglassHalf />
                       )}
-                      {item.text}
-                    </p>
+                    </div>
+                    <div className={styles.timelineContent}>
+                      <p className={styles.historyText}>{item.text}</p>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -301,7 +391,7 @@ const ProfilePage = () => {
 
           <div className={styles.readHistorySection}>
             <h2 className={styles.sectionTitle}>Lịch sử đọc</h2>
-            {readHistory.length > 0 ? (
+            {readHistory.length ? (
               <Slider {...settings}>
                 {readHistory.map((item, index) => (
                   <div key={index} className={styles.historyCard}>
@@ -351,6 +441,64 @@ const ProfilePage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isSummaryModalOpen && selectedSummary && (
+        <div className={styles.summaryModalOverlay}>
+          <div className={styles.summaryModalContent}>
+            <div className={styles.dualLayout}>
+              <div className={styles.contentPane}>
+                <h3>Nội dung gốc</h3>
+                <p>{selectedSummary.content || "Chưa có nội dung"}</p>
+              </div>
+              <div className={styles.summaryPane}>
+                <h3>Tóm tắt</h3>
+                <p>{selectedSummary.summaryContent || "Chưa có tóm tắt"}</p>
+                {selectedSummary.imageUrl && (
+                  <div className={styles.summaryImageContainer}>
+                    <img
+                      src={selectedSummary.imageUrl}
+                      alt="Hình ảnh tóm tắt"
+                      className={styles.summaryImage}
+                    />
+                  </div>
+                )}
+                <div className={styles.statusInfo}>
+                  <p>
+                    Trạng thái:{" "}
+                    {selectedSummary.status === "APPROVED" ? (
+                      <span className={styles.approvedText}>Đã duyệt</span>
+                    ) : selectedSummary.status === "REJECTED" ? (
+                      <span className={styles.rejectedText}>Từ chối</span>
+                    ) : (
+                      <span className={styles.pendingText}>Đang chờ</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.shareButton}
+                onClick={() => handleShare(selectedSummary.shareLink)}
+              >
+                <FaShareAlt /> Chia sẻ
+              </button>
+              <button
+                className={styles.deleteButton}
+                onClick={() => handleDelete(selectedSummary.id)}
+              >
+                <FaTrash /> Xóa
+              </button>
+              <button
+                className={styles.closeButton}
+                onClick={() => setIsSummaryModalOpen(false)}
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}

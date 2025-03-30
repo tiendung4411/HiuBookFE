@@ -133,24 +133,53 @@
 /* Input and Result Section */
 .inputResultSection {
   display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 1400px;
   gap: 20px;
-  flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
+}
+
+.titleContainer {
+  width: 100%;
+  max-width: 1400px;
+  background: #f0faff;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid #a3d4ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .inputResultContainer {
   display: flex;
   width: 100%;
+  max-width: 1400px;
   gap: 20px;
-  flex: 1;
   flex-direction: row;
   align-items: stretch;
+  justify-content: space-between;
 }
 
 /* Text Input Container */
 .textInputContainer {
+  flex: 1;
+  background: #f0faff;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid #a3d4ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Result Section */
+.resultContainer {
   flex: 1;
   background: #f0faff;
   padding: 20px;
@@ -195,6 +224,7 @@
   width: 100%;
   justify-content: center;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 /* Submit Button */
@@ -340,20 +370,6 @@
   margin-top: 10px;
 }
 
-/* Result Section */
-.resultContainer {
-  flex: 1;
-  background: #f0faff;
-  padding: 20px;
-  border-radius: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  border: 2px solid #a3d4ff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 0;
-}
-
 .resultBox {
   background: white;
   padding: 15px;
@@ -375,10 +391,11 @@
 .tabButtons {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
   width: 100%;
   justify-content: center;
   flex-wrap: wrap;
+  align-items: center;
+  margin-top: 10px;
 }
 
 .tabButton {
@@ -558,6 +575,82 @@
 .deleteHistoryButton:hover {
   background: linear-gradient(45deg, #ff9800, #ff7043);
   transform: scale(1.1);
+}
+
+/* Modal for History Submission */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: linear-gradient(135deg, #b2ebf2, #d1c4e9);
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px dashed #4fc3f7;
+  text-align: center;
+  animation: popIn 0.5s ease-in;
+}
+
+.modalContent h3 {
+  font-size: 18px;
+  color: #0288d1;
+  margin-bottom: 10px;
+}
+
+.modalContent p {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.modalCancelButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background: linear-gradient(45deg, #ff7043, #ff9800);
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.modalCancelButton:hover {
+  background: linear-gradient(45deg, #ff9800, #ff7043);
+  transform: scale(1.05);
+}
+
+.modalSubmitButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background: linear-gradient(45deg, #2e7d32, #76ff03);
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.modalSubmitButton:hover {
+  background: linear-gradient(45deg, #76ff03, #2e7d32);
+  transform: scale(1.05);
 }
 
 /* Animations */
@@ -769,27 +862,99 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
 }
 
-.loadingSpinner {
-  display: inline-flex;
+/* Cập nhật CSS cho overlay loading mới (sử dụng ClipLoader từ react-spinners) */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
-.loadingSpinner::before {
-  content: "";
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-  border: 2px solid #fff;
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.loadingContent {
+  background: linear-gradient(135deg, #b2ebf2, #d1c4e9);
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 255, 255, 0.8);
+  border: 2px dashed #4fc3f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  animation: popIn 0.5s ease-in;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.loadingAnimation {
+  /* Không cần animation bounce vì ClipLoader đã có animation quay */
 }
+
+.loadingMessage {
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  color: #0288d1;
+  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.5);
+  font-weight: bold;
+  text-align: center;
+  animation: wobble 1.5s infinite;
+}
+
+/* Title Input */
+.titleInput {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 15px;
+  border: 2px solid #a3d4ff;
+  background: white;
+  margin-bottom: 10px;
+  transition: all 0.3s ease-in-out;
+}
+
+.titleInput:focus {
+  border-color: #ffeb3b;
+  box-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+  outline: none;
+}
+
+/* History Image Container */
+.historyImageContainer {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.historyImage {
+  max-width: 100%;
+  height: auto;
+  border-radius: 15px;
+  border: 2px solid #a3d4ff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Publish Button */
+.publishButton {
+  padding: 15px 30px;
+  font-size: 16px;
+  color: white;
+  background: linear-gradient(45deg, #ff4081, #f06292);
+  border: 2px solid #a3d4ff;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  animation: pulse 2s infinite;
+}
+
+.publishButton:hover {
+  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  transform: scale(1.05);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .headerContainer {
@@ -804,6 +969,11 @@
 
   .inputResultContainer {
     flex-direction: column;
+  }
+
+  .titleContainer {
+    width: 100%;
+    max-width: 300px;
   }
 
   .buttonRow,
@@ -877,6 +1047,29 @@
 
   .displayedImage {
     max-width: 80%;
+  }
+
+  .loadingContent {
+    padding: 15px;
+    max-width: 300px;
+  }
+
+  .loadingMessage {
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  }
+
+  .titleInput {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .historyImage {
+    max-width: 80%;
+  }
+
+  .publishButton {
+    padding: 10px 20px;
+    font-size: 14px;
   }
 }
 
@@ -969,136 +1162,16 @@
   .displayedImage {
     max-width: 100%;
   }
-}
-/* Existing styles remain unchanged, add these new ones */
 
-/* Loading spinner style */
-.loadingSpinner {
-  display: inline-block;
-  animation: spin 1s linear infinite;
-}
-
-/* Loading state for the button */
-.submitButton.loading {
-  opacity: 0.8;
-  cursor: not-allowed;
-}
-
-/* OnClick animation for the submit button */
-.submitButton {
-  background-color: #ff69b4; /* Pink color, adjust as needed */
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.submitButton:hover {
-  background-color: #ff1493; /* Darker pink on hover */
-}
-
-.submitButton:active {
-  transform: scale(0.95); /* Scale down slightly when clicked */
-  background-color: #ff007f; /* Even darker pink when clicked */
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Optional: Add a pulse effect when not loading */
-.submitButton:not(.loading) {
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* Title Input */
-.titleInput {
-  width: 100%;
-  padding: 10px 15px;
-  font-size: 16px;
-  border-radius: 15px;
-  border: 2px solid #a3d4ff;
-  background: white;
-  margin-bottom: 10px;
-  transition: all 0.3s ease-in-out;
-}
-
-.titleInput:focus {
-  border-color: #ffeb3b;
-  box-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
-  outline: none;
-}
-
-/* History Image Container */
-.historyImageContainer {
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.historyImage {
-  max-width: 100%;
-  height: auto;
-  border-radius: 15px;
-  border: 2px solid #a3d4ff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Publish Button */
-.publishButton {
-  padding: 15px 30px;
-  font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #ff4081, #f06292);
-  border: 2px solid #a3d4ff;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  animation: pulse 2s infinite;
-}
-
-.publishButton:hover {
-  background: linear-gradient(45deg, #ffeb3b, #fff176);
-  transform: scale(1.05);
-}
-
-/* Responsive Design for New Elements */
-@media (max-width: 768px) {
-  .titleInput {
-    font-size: 14px;
-    padding: 8px 12px;
+  .loadingContent {
+    padding: 10px;
+    max-width: 250px;
   }
 
-  .historyImage {
-    max-width: 80%;
+  .loadingMessage {
+    font-size: clamp(0.8rem, 2vw, 1rem);
   }
 
-  .publishButton {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
   .titleInput {
     font-size: 12px;
     padding: 6px 10px;

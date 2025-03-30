@@ -6,62 +6,79 @@ import api from './api';
 export const getAllSummaries = () => {
   return api.get('/summaries'); // Adjust the endpoint as necessary
 };
+
+// Fetch all summaries for admin
 export const getAllSummariesAdmin = () => {
   return api.get('/summaries/admin');
 };
 
 // Get summaries by grade
 export const getSummariesByGrade = (grade) => {
-  
-  //add more console.log to debug
+  // Add more console.log to debug
   console.log("grade", grade);
   return api.get(`/summaries/grade/${grade}`);
-
 };
+// /src/api/summaries.js
 
-//get top10 summaries
+
+// New bulk delete function
+export const deleteSummaries = (ids) => {
+  return api.delete('/summaries/bulk', { data: ids });
+};
+// Get top 10 summaries
 export const getTop10Summaries = () => {
   return api.get('/summaries/top10');
 };
+
 // Get summaries by contributor (user)
 export const getSummariesByContributor = (userId) => {
   return api.get(`/summaries/contributor/${userId}`);
 };
+
 // Get summary by ID with userId
 export const getSummaryById = (id, userId) => {
   return api.get(`/summaries/${id}?userId=${userId}`);
 };
-
 
 // Create a new summary
 export const createSummary = (summaryData) => {
   return api.post('/summaries', summaryData);
 };
 
-// Update summary status
+// General-purpose update (PATCH)
+export const updateSummary = (id, updates) => {
+  return api.patch(`/summaries/${id}`, updates);
+};
+
+// Specific status update (sets status to APPROVED or REJECTED based on action)
 export const updateSummaryStatus = (id, status) => {
-  return api.put(`/summaries/${id}/status`, null, {
-    params: { status }
-  });
+  console.log(`Updating summary ${id} status to: ${status}`); // Debug log
+  return updateSummary(id, { status });
+};
+
+// Update title and content
+export const updateSummaryContent = (id, title, content) => {
+  return updateSummary(id, { title, content });
+};
+
+// Update image URL
+export const updateSummaryImage = (id, imageUrl) => {
+  return updateSummary(id, { imageUrl });
 };
 
 // Delete a summary
 export const deleteSummary = (id) => {
   return api.delete(`/summaries/${id}`);
 };
-// export const searchSummariesByTitle = (title) => {
-//   return api.get(`/summaries/search`, {
-//     params: { searchTerm: title }
-//   });
-// };
 
-
+// Search summaries by title and grade
 export const searchSummariesByTitleAndGrade = (title, grade) => {
   return api.get(`/summaries/search`, {
     params: { searchTerm: title, grade: grade }
   });
 };
 
+// Process PDF file
 export const processPdf = (file) => {
   // Debug log to check the file being sent
   console.log("Processing PDF file:", file.name, "Size:", file.size);
@@ -85,6 +102,7 @@ export const processPdf = (file) => {
   });
 };
 
+// Upload image to Cloudinary
 export const uploadImageToCloudinary = (file) => {
   console.log("Uploading image:", file.name, "Size:", file.size); // Debug log
   const formData = new FormData();
