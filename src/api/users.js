@@ -9,7 +9,9 @@ export const getAllUsers = () => {
 export const getUserById = (id) => {
   return api.get(`/users/${id}`);
 };
-
+export const registerUser = (userData) => {
+  return api.post('/users', userData);
+};
 
 export const uploadImageToCloudinary = (file) => {
   console.log("Uploading image:", file.name, "Size:", file.size);

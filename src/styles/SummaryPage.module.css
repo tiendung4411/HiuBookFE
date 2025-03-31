@@ -1186,3 +1186,54 @@
     font-size: 12px;
   }
 }
+/* Container for title suggestions */
+.titleSuggestions {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  animation: magicalAppear 0.5s ease-in-out;
+}
+
+/* Heading for suggestions */
+.titleSuggestions h4 {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+  color: #0288d1;
+}
+
+/* Container for suggestion items */
+.suggestionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Individual suggestion item */
+.suggestionItem {
+  padding: 5px 10px;
+  background: #e3f2fd;
+  border-radius: 15px;
+  color: #0277bd;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.suggestionItem:hover {
+  background: #bbdefb;
+  transform: scale(1.05);
+}
+
+/* Magical appearance animation */
+@keyframes magicalAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

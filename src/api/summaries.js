@@ -81,25 +81,47 @@ export const searchSummariesByTitleAndGrade = (title, grade) => {
 // Process PDF file
 export const processPdf = (file) => {
   // Debug log to check the file being sent
-  console.log("Processing PDF file:", file.name, "Size:", file.size);
+  console.log("Processing PDF file:", {
+    name: file.name,
+    size: file.size,
+    type: file.type,
+  });
 
   // Create FormData to send the file
   const formData = new FormData();
   formData.append("file", file);
 
+  // Debug log to confirm FormData contents
+  console.log("FormData prepared for POST:", Array.from(formData.entries()));
+
   // Return the API POST request
-  return api.post('/summary-sessions/process-pdf', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  }).then(response => {
-    // Debug log to check the response
-    console.log("PDF process response:", response.data);
-    return response.data; // Should return { "cleaned_text": "..." }
-  }).catch(error => {
-    console.error("Error processing PDF:", error.response ? error.response.data : error.message);
-    throw error; // Re-throw the error for handling in the component
-  });
+  return api
+    .post("/summary-sessions/process-pdf", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+    .then((response) => {
+      // Debug log to check the full response
+      console.log("PDF process response received:", {
+        status: response.status,
+        data: response.data,
+      });
+      return {
+        cleanedText: response.data.cleanedText,
+        titles: response.data.titles, // Ensure titles are returned
+      };
+    })
+    .catch((error) => {
+      // Detailed error logging
+      console.error("Error processing PDF:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers,
+      });
+      throw error; // Re-throw the error for handling in the component
+    });
 };
 
 // Upload image to Cloudinary

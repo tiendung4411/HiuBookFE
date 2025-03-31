@@ -9,7 +9,7 @@ import {
   FaArrowRight,
   FaTimes,
   FaQuestionCircle,
-  FaTrash
+  FaTrash,
 } from "react-icons/fa";
 import Confetti from "react-confetti";
 import guideSteps from "../components/guideSteps";
@@ -21,25 +21,13 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from "chart.js";
-import {
-  processPdf,
-  createSummary,
-  uploadImageToCloudinary
-} from "../api/summaries";
+import { processPdf, createSummary, uploadImageToCloudinary } from "../api/summaries";
 import SummarySessionService from "../api/summary_sessions";
 
 // Register Chart.js components
-Chart.register(
-  BarController,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+Chart.register(BarController, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const SummaryPage = () => {
   // State declarations
@@ -48,6 +36,7 @@ const SummaryPage = () => {
   const [selectedGrade, setSelectedGrade] = useState(4); // Default to 4 for "extract"
   const [textInput, setTextInput] = useState("");
   const [titleInput, setTitleInput] = useState("");
+  const [suggestedTitles, setSuggestedTitles] = useState([]); // New state for titles
   const [summaryResult, setSummaryResult] = useState("");
   const [summaries, setSummaries] = useState([]);
   const [selectedSummary, setSelectedSummary] = useState("");
@@ -73,7 +62,7 @@ const SummaryPage = () => {
     rouge: useRef(null),
     bleu: useRef(null),
     meteor: useRef(null),
-    metrics: useRef(null)
+    metrics: useRef(null),
   };
   const [charts, setCharts] = useState({});
 
@@ -102,24 +91,36 @@ const SummaryPage = () => {
     const file = event.target.files[0];
     if (!file || file.type !== "application/pdf") {
       setSummaries([]);
+      setSuggestedTitles([]); // Reset titles on invalid file
       setSelectedSummary("Ôi! Hãy chọn file PDF nha! 😅");
       setSummaryResult("Ôi! Có lỗi khi xử lý PDF nha! 😅");
       return;
     }
 
     try {
+      setIsLoading(true); // Show loading state
       const response = await processPdf(file);
       const cleanedText = response.cleanedText || "";
+      const titles = response.titles || []; // Get titles from response
       setTextInput(cleanedText);
+      setSuggestedTitles(titles); // Set suggested titles
       setSummaries([]);
       setSelectedSummary("");
       setSummaryResult("");
     } catch (error) {
       setSummaries([]);
+      setSuggestedTitles([]); // Reset titles on error
       setSelectedSummary("Ôi! Có lỗi khi xử lý PDF nha! 😅");
       setSummaryResult("Ôi! Có lỗi khi xử lý PDF nha! 😅");
       console.error("PDF processing error:", error);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  /** Handle clicking a suggested title */
+  const handleTitleSuggestionClick = (title) => {
+    setTitleInput(title); // Set the clicked title as the input value
   };
 
   /** Handle image upload to Cloudinary */
@@ -145,13 +146,8 @@ const SummaryPage = () => {
     if (textInput.trim() && userId) {
       setIsLoading(true);
       try {
-        const response = await SummarySessionService.startSession(
-          userId,
-          textInput,
-          selectedMethod
-        );
-        const summaryContent =
-          response.summaryContent || "Không có nội dung tóm tắt";
+        const response = await SummarySessionService.startSession(userId, textInput, selectedMethod);
+        const summaryContent = response.summaryContent || "Không có nội dung tóm tắt";
         const wordCount = summaryContent.split(/\s+/).filter(Boolean).length;
         const summary = { content: summaryContent, wordCount, method: selectedMethod };
 
@@ -187,7 +183,7 @@ const SummaryPage = () => {
         method: history.method,
         content: history.summaryContent,
         wordCount: history.summaryContent.split(/\s+/).filter(Boolean).length,
-        timestamp: history.timestamp || new Date().toLocaleString()
+        timestamp: history.timestamp || new Date().toLocaleString(),
       }));
       setHistorySummaries(formattedHistories);
     } catch (error) {
@@ -202,6 +198,7 @@ const SummaryPage = () => {
   const handleReset = () => {
     setTextInput("");
     setTitleInput("");
+    setSuggestedTitles([]); // Reset titles on reset
     setSummaries([]);
     setSelectedSummary("");
     setSummaryResult("");
@@ -245,7 +242,6 @@ const SummaryPage = () => {
   const handleSubmitForReview = async () => {
     if (!modalSummary) return;
 
-    // Validate grade compatibility
     const isValidGrade = modalSummary.method === "extract" ? selectedGrade >= 4 : true;
     if (!isValidGrade) {
       alert("Lớp học không phù hợp! Vui lòng chọn lớp 4 hoặc 5 cho phương pháp 'Trích xuất'.");
@@ -262,9 +258,9 @@ const SummaryPage = () => {
         method: modalSummary.method,
         grade: selectedGrade.toString(),
         createdBy: { userId: userId },
-        imageUrl: uploadedImage || generatedImage || ""
+        imageUrl: uploadedImage || generatedImage || "",
       };
-
+      console.log("Submitting summary for review:", summaryData);
       const response = await createSummary(summaryData);
       setSelectedSummary(modalSummary.content);
       setSummaryResult(modalSummary.content);
@@ -305,25 +301,22 @@ const SummaryPage = () => {
         datasets: [
           {
             label: "Số từ",
-            data: [
-              text.split(/\s+/).filter(Boolean).length,
-              summaryText.split(/\s+/).filter(Boolean).length
-            ],
+            data: [text.split(/\s+/).filter(Boolean).length, summaryText.split(/\s+/).filter(Boolean).length],
             backgroundColor: ["#1e90ff", "#32cd32"],
             borderColor: ["#1e90ff", "#32cd32"],
-            borderWidth: 2
-          }
-        ]
+            borderWidth: 2,
+          },
+        ],
       }),
       options: (max) => ({
         responsive: true,
         maintainAspectRatio: false,
         scales: {
           y: { beginAtZero: true, max: max + 20, title: { display: true, text: "Số từ" } },
-          x: { title: { display: true, text: "Loại văn bản" } }
-        }
-      })
-    }
+          x: { title: { display: true, text: "Loại văn bản" } },
+        },
+      }),
+    },
   };
 
   // ### Effects
@@ -345,7 +338,7 @@ const SummaryPage = () => {
         newCharts[key] = new Chart(ref.current, {
           type: config.type,
           data,
-          options: { ...options, plugins: { legend: {}, tooltip: {} } }
+          options: { ...options, plugins: { legend: {}, tooltip: {} } },
         });
       }
     });
@@ -412,7 +405,7 @@ const SummaryPage = () => {
                       top: "50%",
                       left: "50%",
                       transform: "translate(-50%, -50%)",
-                      animation: "blink 1s infinite"
+                      animation: "blink 1s infinite",
                     }}
                   />
                 )}
@@ -522,6 +515,22 @@ const SummaryPage = () => {
               onChange={(e) => setTitleInput(e.target.value)}
               placeholder="Nhập tiêu đề nha! 📝"
             />
+            {suggestedTitles.length > 0 && (
+              <div className={styles.titleSuggestions}>
+                <h4>Gợi ý tiêu đề ✨:</h4>
+                <div className={styles.suggestionList}>
+                  {suggestedTitles.map((title, index) => (
+                    <span
+                      key={index}
+                      className={styles.suggestionItem}
+                      onClick={() => handleTitleSuggestionClick(title)}
+                    >
+                      {title}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className={styles.inputResultContainer}>
             <div className={styles.textInputContainer}>

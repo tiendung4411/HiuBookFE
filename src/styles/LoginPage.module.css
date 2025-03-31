@@ -1,0 +1,708 @@
+:root {
+  --primary-color: #42a5f5; /* Xanh chính */
+  --primary-light: #a3dffa; /* Xanh nhạt mềm mại */
+  --primary-dark: #1565c0; /* Xanh đậm sang trọng */
+  --secondary-color: #4dd0e1; /* Xanh ngọc */
+  --accent-color: #ff5722; /* Cam nổi bật */
+  --highlight-color: #ffe082; /* Vàng nhạt dịu */
+  --white: #ffffff;
+  --light-bg: #f0f7ff; /* Nền sáng nhẹ */
+  --dark-bg: #0d1b4d; /* Xanh đen sâu */
+  --box-shadow: 0 6px 20px rgba(66, 165, 245, 0.15);
+  --glow-shadow: 0 0 25px rgba(66, 165, 245, 0.25);
+  --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Mượt mà hơn */
+  --border-radius: 20px;
+  --spacing-sm: 10px;
+  --spacing-md: 15px;
+  --spacing-lg: 20px;
+}
+
+.loginContainer {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(
+    135deg,
+    var(--primary-light) 0%,
+    var(--primary-color) 50%,
+    var(--primary-dark) 100%
+  );
+  background-size: 200% 200%;
+  animation: gradientFlow 12s ease infinite, wave 8s ease infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.loginHeader {
+  text-align: center;
+  opacity: 0;
+  transition: var(--transition);
+  margin-bottom: var(--spacing-lg);
+}
+
+.fadeIn {
+  opacity: 1;
+}
+
+.loginLogo {
+  width: clamp(140px, 30vw, 200px);
+  height: auto;
+  margin-top: var(--spacing-md);
+  filter: drop-shadow(0 0 10px var(--highlight-color));
+  animation: zoomIn 1s ease-out forwards, pulseGlow 2.5s ease-in-out infinite;
+  position: relative;
+}
+
+.loginLogo::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: calc(100% + 20px);
+  height: calc(100% + 20px);
+  background: radial-gradient(
+    circle,
+    rgba(255, 224, 130, 0.4) 0%,
+    transparent 70%
+  );
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+.loginLogo:hover {
+  transform: scale(1.08) rotate(3deg);
+  filter: drop-shadow(0 0 15px var(--accent-color));
+}
+
+.headerTitle {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  color: var(--white);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.headerSubtitle {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  color: var(--highlight-color);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.loginForm {
+  width: clamp(320px, 80%, 420px);
+  padding: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow), var(--glow-shadow);
+  transition: var(--transition);
+  opacity: 0;
+  animation: floatForm 4s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.formVisible {
+  opacity: 1;
+}
+
+.loginForm:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 25px rgba(66, 165, 245, 0.25),
+    0 0 30px rgba(66, 165, 245, 0.2);
+}
+
+.loginForm::before {
+  content: "";
+  position: absolute;
+  top: var(--ripple-y, 50%);
+  left: var(--ripple-x, 50%);
+  width: 0;
+  height: 0;
+  background: rgba(66, 165, 245, 0.25);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.loginForm:active::before {
+  animation: ripple 0.7s ease forwards;
+}
+
+.formGroup {
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputField {
+  width: 100%;
+  padding: 16px 14px;
+  border: 2px solid var(--primary-dark);
+  border-radius: 12px;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  background: var(--light-bg);
+  color: #1a1a1a;
+  transition: var(--transition);
+  box-sizing: border-box;
+  height: 50px;
+}
+
+.inputField::placeholder {
+  color: #888;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.inputField:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 12px rgba(255, 87, 34, 0.4);
+  transform: scale(1.01);
+  outline: none;
+  animation: bounce 0.5s ease;
+}
+
+.inputField.error {
+  border-color: var(--accent-color);
+  animation: shake 0.5s ease;
+}
+
+.passwordContainer {
+  position: relative;
+}
+
+.togglePassword {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--primary-dark);
+  font-size: 1.3rem;
+  transition: var(--transition);
+  aria-label: "Ẩn/Hiện mật khẩu";
+}
+
+.togglePassword:hover {
+  color: var(--accent-color);
+}
+
+.message {
+  text-align: center;
+  padding: var(--spacing-sm);
+  border-radius: 12px;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  margin: var(--spacing-md) 0;
+  animation: popIn 0.4s ease;
+}
+
+.success {
+  background: linear-gradient(45deg, #2e7d32, #66bb6a);
+  color: var(--white);
+}
+
+.error {
+  background: linear-gradient(45deg, #d84315, #ff7043);
+  color: var(--white);
+}
+
+.loginButton,
+.registerButton,
+.googleButton,
+.facebookButton,
+.modalSubmitButton,
+.modalCloseButton {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-weight: 600;
+  color: var(--white);
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--box-shadow);
+  background-size: 300% 300%;
+  animation: buttonGradient 4s ease infinite;
+}
+
+.loginButton::before,
+.registerButton::before,
+.googleButton::before,
+.facebookButton::before,
+.modalSubmitButton::before,
+.modalCloseButton::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -100%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: glimmer 2s infinite;
+  pointer-events: none;
+}
+
+.loginButton::after,
+.registerButton::after,
+.googleButton::after,
+.facebookButton::after,
+.modalSubmitButton::after,
+.modalCloseButton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: all 0.6s ease;
+}
+
+.loginButton:hover:not(:disabled),
+.registerButton:hover:not(:disabled),
+.googleButton:hover,
+.facebookButton:hover,
+.modalSubmitButton:hover:not(:disabled),
+.modalCloseButton:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(66, 165, 245, 0.35),
+    0 0 30px rgba(255, 255, 255, 0.5);
+}
+
+.loginButton:hover::after,
+.registerButton:hover::after,
+.googleButton:hover::after,
+.facebookButton:hover::after,
+.modalSubmitButton:hover::after,
+.modalCloseButton:hover::after {
+  left: 150%;
+}
+
+.loginButton {
+  background: linear-gradient(
+    45deg,
+    var(--primary-dark),
+    var(--primary-color),
+    var(--primary-light)
+  );
+  animation: buttonGradient 4s ease infinite, pulse 2s ease infinite;
+}
+
+.registerButton {
+  background: linear-gradient(
+    45deg,
+    var(--accent-color),
+    var(--highlight-color),
+    var(--accent-color)
+  );
+}
+
+.googleButton {
+  background: linear-gradient(45deg, #db4437, #f28b82);
+}
+
+.facebookButton {
+  background: linear-gradient(45deg, #4267b2, #8ab4f8);
+}
+
+.modalSubmitButton {
+  background: linear-gradient(
+    45deg,
+    var(--accent-color),
+    var(--highlight-color)
+  );
+}
+
+.modalCloseButton {
+  background: linear-gradient(45deg, #666, #999);
+}
+
+.loginButton:disabled,
+.registerButton:disabled,
+.modalSubmitButton:disabled,
+.modalCloseButton:disabled {
+  background: #b0bec5;
+  cursor: not-allowed;
+  animation: none;
+}
+
+.loadingSpinner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spinnerIcon {
+  animation: spin 1s linear infinite;
+}
+
+.extraButtons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.forgotButton {
+  background: none;
+  border: none;
+  color: var(--primary-dark);
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+  aria-label: "Quên mật khẩu";
+}
+
+.forgotButton:hover {
+  color: var(--accent-color);
+  transform: translateX(4px);
+}
+
+.registerButton {
+  width: 100%;
+  padding: 14px;
+}
+
+.mobileText {
+  display: none;
+}
+
+.socialLogin {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: linear-gradient(
+    135deg,
+    var(--primary-light),
+    var(--primary-dark)
+  );
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow), var(--glow-shadow);
+  width: clamp(300px, 80%, 400px);
+  text-align: center;
+  position: relative;
+  animation: floatForm 4s ease-in-out infinite;
+}
+
+.modalTitle {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  color: var(--white);
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modalSubtitle {
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  color: var(--highlight-color);
+  margin-bottom: var(--spacing-md);
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.modalInput {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid var(--primary-dark);
+  border-radius: 12px;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  background: var(--light-bg);
+  color: #1a1a1a;
+  transition: var(--transition);
+  box-sizing: border-box;
+  height: 50px;
+}
+
+.modalInput::placeholder {
+  color: #888;
+}
+
+.modalInput:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 12px rgba(255, 87, 34, 0.4);
+  transform: scale(1.01);
+  outline: none;
+  animation: bounce 0.5s ease;
+}
+
+.modalButtonGroup {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.modalSubmitButton,
+.modalCloseButton {
+  padding: 12px 20px;
+  width: 100%;
+}
+
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.overlaySpinner {
+  font-size: 3rem;
+  color: var(--highlight-color);
+  animation: spin 1s linear infinite;
+}
+
+/* Animations */
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatForm {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 200%;
+    height: 200%;
+    opacity: 0;
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px var(--highlight-color));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px var(--highlight-color));
+  }
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes zoomIn {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes glimmer {
+  0% {
+    transform: translateX(-50%) rotate(45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(50%) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(150%) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+@keyframes buttonGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .loginForm {
+    width: 92%;
+  }
+  .desktopText {
+    display: none;
+  }
+  .mobileText {
+    display: inline;
+  }
+  .socialLogin {
+    flex-direction: column;
+  }
+  .modalButtonGroup {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .loginLogo {
+    width: clamp(100px, 20vw, 140px);
+  }
+  .headerTitle {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+  }
+  .headerSubtitle {
+    font-size: clamp(0.85rem, 2vw, 1.2rem);
+  }
+  .loginButton,
+  .registerButton,
+  .googleButton,
+  .facebookButton,
+  .modalSubmitButton,
+  .modalCloseButton {
+    padding: 12px;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+  }
+}
