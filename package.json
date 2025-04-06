@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@google/generative-ai": "^0.24.0",
     "@loadable/component": "^5.16.4",
     "@mui/material": "^6.4.7",
     "@testing-library/dom": "^10.4.0",
@@ -16,6 +17,7 @@
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.8",
     "framer-motion": "^12.5.0",
+    "gojs": "^3.0.21",
     "lottie-react": "^2.4.1",
     "pdfjs-dist": "^4.10.38",
     "react": "^18.0.0",
@@ -24,6 +26,7 @@
     "react-howler": "^5.2.0",
     "react-icons": "^5.5.0",
     "react-icons-kit": "^2.0.0",
+    "react-markdown": "^10.1.0",
     "react-modal": "^3.16.3",
     "react-router-dom": "^7.3.0",
     "react-scripts": "^5.0.1",
