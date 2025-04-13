@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import styles from "../styles/Header.module.css"; // Ensure the CSS path is correct
-import logo from "../assets/images/logo.png"; // Update the logo path as needed
+import styles from "../styles/Header.module.css";
+import logo from "../assets/images/logo.png";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -10,13 +10,11 @@ const Header = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // On mount, retrieve user data from localStorage and set up event listeners
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      //log the role
       console.log(parsedUser.role);
     }
 
@@ -41,27 +39,21 @@ const Header = () => {
     };
   }, []);
 
-  // Close mobile menu when a link is clicked
   const closeMenu = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Toggle the mobile menu open/closed
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Logout handler: remove user data and navigate to login page
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
     navigate("/login");
   };
 
-  // Determine if dark mode is active
   const isDarkMode = document.body.classList.contains("dark-theme");
-
-  // Check if user is an Admin
   const isAdmin = user && user.role === "ADMIN";
 
   return (
@@ -142,15 +134,54 @@ const Header = () => {
           </svg>
           Tóm tắt
         </Link>
+        {/* Thay "Chơi tóm tắt" bằng "Sắp xếp truyện" */}
+        <Link to="/story-workshop" className={styles.navLink}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 2v20M2 12h20"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Sắp xếp truyện
+        </Link>
+        {/* Giữ nguyên "Sơ đồ tư duy" */}
+        <Link to="/mindmap" className={styles.navLink}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M12 8v8M8 12h8"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Sơ đồ tư duy
+        </Link>
         {isAdmin && (
           <Link to="/admin/dashboard" className={styles.navLink}>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path
                 d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"
                 stroke="currentColor"
@@ -256,7 +287,9 @@ const Header = () => {
       </button>
 
       {/* Mobile Navigation */}
-      <nav className={`${styles.mobileNav} ${isMobileMenuOpen ? styles.open : ""}`}>
+      <nav
+        className={`${styles.mobileNav} ${isMobileMenuOpen ? styles.open : ""}`}
+      >
         <Link to="/" className={styles.navLink} onClick={closeMenu}>
           <svg
             width="16"
@@ -321,8 +354,61 @@ const Header = () => {
           </svg>
           Tóm tắt
         </Link>
+        {/* Thay "Chơi tóm tắt" bằng "Sắp xếp truyện" */}
+        <Link
+          to="/story-workshop"
+          className={styles.navLink}
+          onClick={closeMenu}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 2v20M2 12h20"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Sắp xếp truyện
+        </Link>
+        {/* Giữ nguyên "Sơ đồ tư duy" */}
+        <Link to="/mindmap" className={styles.navLink} onClick={closeMenu}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M12 8v8M8 12h8"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Sơ đồ tư duy
+        </Link>
         {isAdmin && (
-          <Link to="/admin" className={styles.navLink} onClick={closeMenu}>
+          <Link
+            to="/admin/dashboard"
+            className={styles.navLink}
+            onClick={closeMenu}
+          >
             <svg
               width="16"
               height="16"

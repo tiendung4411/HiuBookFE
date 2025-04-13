@@ -73,29 +73,41 @@ const SummarySessionService = {
   },
 
   // Start a new session and create summary history
-  async startSession(userId, content, method) {
-    try {
-      const response = await api.post('/summary-histories/start-session', {
-        userId: userId,
-        content: content,
-        method: method
-      });
-      console.log("Response from start session:", response.data); 
-      return response.data; // Returns SummaryHistoryDTO
-    } catch (error) {
-      console.error('Error starting session:', error);
-      throw error;
+// Start a new session and create summary history
+async startSession(userId, content, method, grade = null) {
+  console.log("method:", method); // Debug log for method
+  try {
+    const payload = {
+      userId: userId,
+      content: content,
+      method: method
+    };
+    // Include grade only for paraphrase method
+    if (method === 'paraphrase') {
+      payload.grade = grade;
+      console.log("Grade provided:", grade); // Debug log for grade   
     }
-  },
-
+    const response = await api.post('/summary-histories/start-session', payload);
+    console.log("Response from start session:", response.data); 
+    return response.data; // Returns SummaryHistoryDTO
+  } catch (error) {
+    console.error('Error starting session:', error);
+    throw error;
+  }
+},
   // Create a new summary history for an existing session
-  async createSummary(sessionId, method, content) {
+  async createSummary(sessionId, method, content, grade = null) {
     try {
-      const response = await api.post('/summary-histories/create-summary', {
+      const payload = {
         sessionId: sessionId,
         method: method,
         content: content
-      });
+      };
+      // Include grade only for extract/extraction methods
+      if (method === 'extract' || method === 'extraction') {
+        payload.grade = grade;
+      }
+      const response = await api.post('/summary-histories/create-summary', payload);
       return response.data; // Returns SummaryHistoryDTO
     } catch (error) {
       console.error('Error creating summary:', error);
@@ -146,7 +158,7 @@ const SummarySessionService = {
     }
   },
 
-  // New method: Get all histories for a specific session
+  // Get all histories for a specific session
   async getHistoriesBySession(sessionId) {
     try {
       console.log('Getting histories for session:', sessionId);

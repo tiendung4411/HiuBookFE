@@ -10,7 +10,7 @@ import {
   FaFilePdf,
   FaSearchPlus,
   FaExpand,
-  FaTimes,
+  FaTimes
 } from "react-icons/fa";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import ReactMarkdown from "react-markdown";
@@ -48,7 +48,7 @@ const MindmapPage = () => {
     } catch (error) {
       console.error("Lỗi khi gọi Gemini API:", {
         message: error.message,
-        stack: error.stack,
+        stack: error.stack
       });
       throw new Error(
         "Không thể gọi API. Vui lòng kiểm tra API key, quota hoặc kết nối mạng."
@@ -73,7 +73,12 @@ const MindmapPage = () => {
         const cleanedText = responseText.replace(/```json|```/g, "").trim();
         parsedData = JSON.parse(cleanedText);
       } catch (jsonError) {
-        console.error("Lỗi khi parse JSON:", jsonError, "Dữ liệu thô:", responseText);
+        console.error(
+          "Lỗi khi parse JSON:",
+          jsonError,
+          "Dữ liệu thô:",
+          responseText
+        );
         throw new Error("Dữ liệu trả về từ API không phải JSON hợp lệ");
       }
       if (!parsedData || typeof parsedData !== "object") {
@@ -81,14 +86,14 @@ const MindmapPage = () => {
       }
       const extractedData = parsedData[type] || {
         title: "Lỗi dữ liệu",
-        branches: ["Dữ liệu không khớp với loại sơ đồ"],
+        branches: ["Dữ liệu không khớp với loại sơ đồ"]
       };
       return extractedData;
     } catch (error) {
       console.error("Lỗi khi tạo dữ liệu sơ đồ:", error);
       return {
         title: "Lỗi dữ liệu",
-        branches: ["Kiểm tra lại nội dung hoặc API"],
+        branches: ["Kiểm tra lại nội dung hoặc API"]
       };
     }
   };
@@ -129,7 +134,7 @@ const MindmapPage = () => {
       layout: getLayout(diagramType),
       "undoManager.isEnabled": true,
       initialContentAlignment: Go.Spot.Center,
-      initialAutoScale: Go.Diagram.Uniform,
+      initialAutoScale: Go.Diagram.Uniform
     });
 
     diagram.nodeTemplate = $(
@@ -139,7 +144,7 @@ const MindmapPage = () => {
         fill: getRandomColor(),
         strokeWidth: 2,
         stroke: "#00bcd4",
-        parameter1: 10,
+        parameter1: 10
       }),
       $(
         Go.TextBlock,
@@ -148,7 +153,7 @@ const MindmapPage = () => {
           font: "bold 24px Comic Neue, sans-serif",
           stroke: "#333",
           textAlign: "center",
-          maxSize: new Go.Size(300, NaN),
+          maxSize: new Go.Size(300, NaN)
         },
         new Go.Binding("text", "key")
       )
@@ -196,7 +201,7 @@ const MindmapPage = () => {
         return $(Go.TreeLayout, {
           angle: 90,
           layerSpacing: 50,
-          nodeSpacing: 30,
+          nodeSpacing: 30
         });
       case "flowchart":
         return $(Go.LayeredDigraphLayout, { direction: 90 });
@@ -205,12 +210,12 @@ const MindmapPage = () => {
       case "timeline":
         return $(Go.GridLayout, {
           wrappingColumn: 1,
-          spacing: new Go.Size(10, 20),
+          spacing: new Go.Size(10, 20)
         });
       case "fishbone":
         return $(Go.TreeLayout, {
           angle: 0,
-          alignment: Go.TreeLayout.AlignmentBus,
+          alignment: Go.TreeLayout.AlignmentBus
         });
       default:
         return $(Go.TreeLayout, { angle: 90, layerSpacing: 50 });
@@ -222,19 +227,19 @@ const MindmapPage = () => {
     switch (type) {
       case "tree":
         const treeNodes = [
-          { key: map.title || "Chưa có tiêu đề", isTreeExpanded: true },
+          { key: map.title || "Chưa có tiêu đề", isTreeExpanded: true }
         ];
         if (map.branches && Array.isArray(map.branches)) {
           map.branches.forEach((branch) => {
             treeNodes.push({
               key: branch.title,
-              parent: map.title,
+              parent: map.title
             });
             if (branch.branches && Array.isArray(branch.branches)) {
               branch.branches.forEach((subBranch) => {
                 treeNodes.push({
                   key: subBranch,
-                  parent: branch.title,
+                  parent: branch.title
                 });
               });
             }
@@ -253,7 +258,7 @@ const MindmapPage = () => {
         return { nodes: flowNodes, links: flowLinks };
       case "circle":
         const circleNodes = [
-          { key: map.theme || "Chưa có chủ đề", isTreeExpanded: true },
+          { key: map.theme || "Chưa có chủ đề", isTreeExpanded: true }
         ];
         if (map.details && Array.isArray(map.details)) {
           circleNodes.push(
@@ -266,11 +271,11 @@ const MindmapPage = () => {
           nodes:
             map.timeline && Array.isArray(map.timeline)
               ? map.timeline.map((t) => ({ key: t }))
-              : [{ key: "Chưa có thời gian" }],
+              : [{ key: "Chưa có thời gian" }]
         };
       case "fishbone":
         const fishNodes = [
-          { key: map.result || "Chưa có kết quả", isTreeExpanded: true },
+          { key: map.result || "Chưa có kết quả", isTreeExpanded: true }
         ];
         if (map.causes && Array.isArray(map.causes)) {
           fishNodes.push(
@@ -291,7 +296,7 @@ const MindmapPage = () => {
       const newMindmap = {
         id: mindmaps.length + 1,
         ...response,
-        layout: diagramType,
+        layout: diagramType
       };
       setMindmaps([...mindmaps, newMindmap]);
       setActiveMindmap(mindmaps.length);
@@ -314,8 +319,8 @@ const MindmapPage = () => {
           id: mindmaps.length + 1,
           title: "Lỗi",
           branches: ["Kiểm tra lại"],
-          layout: diagramType,
-        },
+          layout: diagramType
+        }
       ]);
       setActiveMindmap(mindmaps.length);
     }

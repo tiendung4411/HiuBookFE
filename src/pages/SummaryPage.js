@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import Header from "../components/Header";
+import { Link } from "react-router-dom";
 import styles from "../styles/SummaryPage.module.css";
+import Header from "../components/Header";
+import EvaluationSection from "../components/EvaluationSection";
 import * as pdfjsLib from "pdfjs-dist";
 import Lottie from "lottie-react";
 import whaleAnimation from "../assets/images/animation/Animation - 1741792766942.json";
@@ -9,7 +11,7 @@ import {
   FaArrowRight,
   FaTimes,
   FaQuestionCircle,
-  FaTrash,
+  FaTrash
 } from "react-icons/fa";
 import Confetti from "react-confetti";
 import guideSteps from "../components/guideSteps";
@@ -21,22 +23,33 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 } from "chart.js";
-import { processPdf, createSummary, uploadImageToCloudinary } from "../api/summaries";
+import {
+  processPdf,
+  createSummary,
+  uploadImageToCloudinary
+} from "../api/summaries";
 import SummarySessionService from "../api/summary_sessions";
 
 // Register Chart.js components
-Chart.register(BarController, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+Chart.register(
+  BarController,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const SummaryPage = () => {
-  // State declarations
   const [selectedMethod, setSelectedMethod] = useState("extract");
   const [selectedSummaryMethod, setSelectedSummaryMethod] = useState(null);
-  const [selectedGrade, setSelectedGrade] = useState(4); // Default to 4 for "extract"
+  const [selectedGrade, setSelectedGrade] = useState(4);
   const [textInput, setTextInput] = useState("");
   const [titleInput, setTitleInput] = useState("");
-  const [suggestedTitles, setSuggestedTitles] = useState([]); // New state for titles
+  const [suggestedTitles, setSuggestedTitles] = useState([]);
   const [summaryResult, setSummaryResult] = useState("");
   const [summaries, setSummaries] = useState([]);
   const [selectedSummary, setSelectedSummary] = useState("");
@@ -62,54 +75,48 @@ const SummaryPage = () => {
     rouge: useRef(null),
     bleu: useRef(null),
     meteor: useRef(null),
-    metrics: useRef(null),
+    metrics: useRef(null)
   };
   const [charts, setCharts] = useState({});
 
-  // Set PDF.js worker source
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js";
 
-  // ### Event Handlers
-
-  /** Handle method change and reset related states */
   const handleMethodChange = (newMethod) => {
     setSelectedMethod(newMethod);
-    setModalSummary(null); // Reset selected summary
-    setSelectedSummaryMethod(null); // Reset summary method
-    setSelectedGrade(newMethod === "extract" ? 4 : 1); // Set default grade
+    setModalSummary(null);
+    setSelectedSummaryMethod(null);
+    setSelectedGrade(newMethod === "extract" ? 4 : 1);
   };
 
-  /** Determine if a grade should be disabled based on method */
   const isGradeDisabled = (grade) => {
     const method = selectedSummaryMethod || selectedMethod;
-    return method === "extract" && grade < 4; // Disable grades 1-3 for "extract"
+    return method === "extract" && grade < 4;
   };
 
-  /** Handle PDF file upload */
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file || file.type !== "application/pdf") {
       setSummaries([]);
-      setSuggestedTitles([]); // Reset titles on invalid file
+      setSuggestedTitles([]);
       setSelectedSummary("Ôi! Hãy chọn file PDF nha! 😅");
       setSummaryResult("Ôi! Có lỗi khi xử lý PDF nha! 😅");
       return;
     }
 
     try {
-      setIsLoading(true); // Show loading state
+      setIsLoading(true);
       const response = await processPdf(file);
       const cleanedText = response.cleanedText || "";
-      const titles = response.titles || []; // Get titles from response
+      const titles = response.titles || [];
       setTextInput(cleanedText);
-      setSuggestedTitles(titles); // Set suggested titles
+      setSuggestedTitles(titles);
       setSummaries([]);
       setSelectedSummary("");
       setSummaryResult("");
     } catch (error) {
       setSummaries([]);
-      setSuggestedTitles([]); // Reset titles on error
+      setSuggestedTitles([]);
       setSelectedSummary("Ôi! Có lỗi khi xử lý PDF nha! 😅");
       setSummaryResult("Ôi! Có lỗi khi xử lý PDF nha! 😅");
       console.error("PDF processing error:", error);
@@ -118,12 +125,10 @@ const SummaryPage = () => {
     }
   };
 
-  /** Handle clicking a suggested title */
   const handleTitleSuggestionClick = (title) => {
-    setTitleInput(title); // Set the clicked title as the input value
+    setTitleInput(title);
   };
 
-  /** Handle image upload to Cloudinary */
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -141,15 +146,24 @@ const SummaryPage = () => {
     }
   };
 
-  /** Generate summary from text input */
   const handleSummary = async () => {
     if (textInput.trim() && userId) {
       setIsLoading(true);
       try {
-        const response = await SummarySessionService.startSession(userId, textInput, selectedMethod);
-        const summaryContent = response.summaryContent || "Không có nội dung tóm tắt";
+        const response = await SummarySessionService.startSession(
+          userId,
+          textInput,
+          selectedMethod,
+          selectedMethod === "paraphrase" ? selectedGrade : null // Pass grade for paraphrase
+        );
+        const summaryContent =
+          response.summaryContent || "Không có nội dung tóm tắt";
         const wordCount = summaryContent.split(/\s+/).filter(Boolean).length;
-        const summary = { content: summaryContent, wordCount, method: selectedMethod };
+        const summary = {
+          content: summaryContent,
+          wordCount,
+          method: selectedMethod
+        };
 
         setSummaries([summary]);
         setSelectedSummary(summary.content);
@@ -170,20 +184,21 @@ const SummaryPage = () => {
     }
   };
 
-  /** Fetch summary history for the current session */
   const fetchHistorySummaries = async (sessionId) => {
     if (!userId || !sessionId) {
       setHistorySummaries([]);
       return;
     }
     try {
-      const histories = await SummarySessionService.getHistoriesBySession(sessionId);
+      const histories = await SummarySessionService.getHistoriesBySession(
+        sessionId
+      );
       const formattedHistories = histories.map((history) => ({
         historyId: history.historyId,
         method: history.method,
         content: history.summaryContent,
         wordCount: history.summaryContent.split(/\s+/).filter(Boolean).length,
-        timestamp: history.timestamp || new Date().toLocaleString(),
+        timestamp: history.timestamp || new Date().toLocaleString()
       }));
       setHistorySummaries(formattedHistories);
     } catch (error) {
@@ -194,11 +209,10 @@ const SummaryPage = () => {
 
   const handleTextSubmit = () => handleSummary();
 
-  /** Reset all input and output states */
   const handleReset = () => {
     setTextInput("");
     setTitleInput("");
-    setSuggestedTitles([]); // Reset titles on reset
+    setSuggestedTitles([]);
     setSummaries([]);
     setSelectedSummary("");
     setSummaryResult("");
@@ -209,11 +223,12 @@ const SummaryPage = () => {
     setSelectedSummaryMethod(null);
   };
 
-  /** Generate an image based on the selected summary */
   const generateImage = async () => {
     setIsGeneratingImage(true);
     try {
-      const imageData = await SummarySessionService.generateImage(selectedSummary);
+      const imageData = await SummarySessionService.generateImage(
+        selectedSummary
+      );
       const imageUrl = imageData.imageUrl || imageData;
       setGeneratedImage(imageUrl);
       setUploadedImage(null);
@@ -224,27 +239,27 @@ const SummaryPage = () => {
     }
   };
 
-  /** Select a summary from the current session */
   const handleSelectSummary = (summary) => {
     setModalSummary(summary);
     setSelectedSummaryMethod(summary.method);
     setShowModal(true);
   };
 
-  /** Select a summary from history */
   const handleSelectHistorySummary = (summary) => {
     setModalSummary(summary);
     setSelectedSummaryMethod(summary.method);
     setShowModal(true);
   };
 
-  /** Submit the selected summary for review */
   const handleSubmitForReview = async () => {
     if (!modalSummary) return;
 
-    const isValidGrade = modalSummary.method === "extract" ? selectedGrade >= 4 : true;
+    const isValidGrade =
+      modalSummary.method === "extract" ? selectedGrade >= 4 : true;
     if (!isValidGrade) {
-      alert("Lớp học không phù hợp! Vui lòng chọn lớp 4 hoặc 5 cho phương pháp 'Trích xuất'.");
+      alert(
+        "Lớp học không phù hợp! Vui lòng chọn lớp 4 hoặc 5 cho phương pháp 'Trích xuất'."
+      );
       return;
     }
 
@@ -258,13 +273,18 @@ const SummaryPage = () => {
         method: modalSummary.method,
         grade: selectedGrade.toString(),
         createdBy: { userId: userId },
-        imageUrl: uploadedImage || generatedImage || "",
+        imageUrl: uploadedImage || generatedImage || ""
       };
-      console.log("Submitting summary for review:", summaryData);
       const response = await createSummary(summaryData);
       setSelectedSummary(modalSummary.content);
       setSummaryResult(modalSummary.content);
-      setSummaries([{ content: modalSummary.content, wordCount: modalSummary.wordCount, method: modalSummary.method }]);
+      setSummaries([
+        {
+          content: modalSummary.content,
+          wordCount: modalSummary.wordCount,
+          method: modalSummary.method
+        }
+      ]);
       setShowHistory(false);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
@@ -275,7 +295,6 @@ const SummaryPage = () => {
     }
   };
 
-  /** Delete a summary from history */
   const handleDeleteHistorySummary = async (historyId) => {
     if (window.confirm("Bạn có chắc muốn xóa lần tóm tắt này không?")) {
       try {
@@ -292,7 +311,6 @@ const SummaryPage = () => {
     if (currentSessionId) fetchHistorySummaries(currentSessionId);
   };
 
-  // ### Chart Configuration
   const chartConfigs = {
     wordCount: {
       type: "bar",
@@ -301,25 +319,31 @@ const SummaryPage = () => {
         datasets: [
           {
             label: "Số từ",
-            data: [text.split(/\s+/).filter(Boolean).length, summaryText.split(/\s+/).filter(Boolean).length],
+            data: [
+              text.split(/\s+/).filter(Boolean).length,
+              summaryText.split(/\s+/).filter(Boolean).length
+            ],
             backgroundColor: ["#1e90ff", "#32cd32"],
             borderColor: ["#1e90ff", "#32cd32"],
-            borderWidth: 2,
-          },
-        ],
+            borderWidth: 2
+          }
+        ]
       }),
       options: (max) => ({
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: { beginAtZero: true, max: max + 20, title: { display: true, text: "Số từ" } },
-          x: { title: { display: true, text: "Loại văn bản" } },
-        },
-      }),
-    },
+          y: {
+            beginAtZero: true,
+            max: max + 20,
+            title: { display: true, text: "Số từ" }
+          },
+          x: { title: { display: true, text: "Loại văn bản" } }
+        }
+      })
+    }
   };
 
-  // ### Effects
   useEffect(() => {
     setShowGuideSteps(true);
   }, [userId]);
@@ -338,7 +362,7 @@ const SummaryPage = () => {
         newCharts[key] = new Chart(ref.current, {
           type: config.type,
           data,
-          options: { ...options, plugins: { legend: {}, tooltip: {} } },
+          options: { ...options, plugins: { legend: {}, tooltip: {} } }
         });
       }
     });
@@ -346,7 +370,6 @@ const SummaryPage = () => {
     setCharts(newCharts);
   }, [summaryResult, textInput]);
 
-  // ### Guide Handlers
   const handleShowGuideAgain = () => {
     setShowGuideSteps(true);
     setCurrentStep(0);
@@ -355,7 +378,8 @@ const SummaryPage = () => {
   const handleStepInteraction = (e) => {
     const targetClass = e.target.className;
     const currentHighlight = guideSteps[currentStep].highlight;
-    if (currentHighlight && currentHighlight.includes(targetClass)) handleNextStep();
+    if (currentHighlight && currentHighlight.includes(targetClass))
+      handleNextStep();
   };
 
   const handleNextStep = () => {
@@ -368,21 +392,26 @@ const SummaryPage = () => {
 
   const handleSkipGuide = () => setShowGuideSteps(false);
 
-  // ### Render
   return (
     <div className={styles.container} onClick={handleStepInteraction}>
+      <Header />
       {showConfetti && <Confetti />}
       {(isLoading || isGeneratingImage) && (
         <div className={styles.loadingOverlay}>
           <div className={styles.loadingContent}>
-            <ClipLoader color="#0288d1" size={100} className={styles.loadingAnimation} />
+            <ClipLoader
+              color="#0288d1"
+              size={100}
+              className={styles.loadingAnimation}
+            />
             <p className={styles.loadingMessage}>
-              {isLoading ? "Đang làm việc siêu tốc nha! ⚡🌟" : "Chờ một xíu thôi nè! ⏳💖"}
+              {isLoading
+                ? "Đang làm việc siêu tốc nha! ⚡🌟"
+                : "Chờ một xíu thôi nè! ⏳💖"}
             </p>
           </div>
         </div>
       )}
-      <Header />
       <main className={styles.mainContent}>
         {showGuideSteps && (
           <div className={styles.guideStepsContainer}>
@@ -390,10 +419,14 @@ const SummaryPage = () => {
               <div className={styles.guideStepContent}>
                 <Lottie
                   animationData={whaleAnimation}
-                  className={`${styles.guideStepCharacter} ${currentStep === 5 ? styles.jump : ""}`}
+                  className={`${styles.guideStepCharacter} ${
+                    currentStep === 5 ? styles.jump : ""
+                  }`}
                 />
                 <div className={styles.guideStepMessage}>
-                  <span className={styles.guideStepIcon}>{guideSteps[currentStep].icon}</span>
+                  <span className={styles.guideStepIcon}>
+                    {guideSteps[currentStep].icon}
+                  </span>
                   <p>{guideSteps[currentStep].message}</p>
                 </div>
                 {guideSteps[currentStep].highlight && (
@@ -405,7 +438,7 @@ const SummaryPage = () => {
                       top: "50%",
                       left: "50%",
                       transform: "translate(-50%, -50%)",
-                      animation: "blink 1s infinite",
+                      animation: "blink 1s infinite"
                     }}
                   />
                 )}
@@ -437,9 +470,9 @@ const SummaryPage = () => {
                   <span className={styles.buttonIcon}>🌊</span> Trích xuất
                 </button>
                 <button
-                  className={`${styles.optionButton} ${styles.methodParaphrase} ${
-                    selectedMethod === "paraphrase" ? styles.active : ""
-                  }`}
+                  className={`${styles.optionButton} ${
+                    styles.methodParaphrase
+                  } ${selectedMethod === "paraphrase" ? styles.active : ""}`}
                   onClick={() => handleMethodChange("paraphrase")}
                   data-tooltip="Nhấn để Diễn giải văn bản! 🌴"
                 >
@@ -507,7 +540,9 @@ const SummaryPage = () => {
 
         <div className={styles.inputResultSection}>
           <div className={styles.titleContainer}>
-            <h3 className={styles.sectionTitle}>Nhập tiêu đề cho bản tóm tắt nha! 📝</h3>
+            <h3 className={styles.sectionTitle}>
+              Nhập tiêu đề cho bản tóm tắt nha! 📝
+            </h3>
             <input
               type="text"
               className={styles.titleInput}
@@ -534,7 +569,9 @@ const SummaryPage = () => {
           </div>
           <div className={styles.inputResultContainer}>
             <div className={styles.textInputContainer}>
-              <h3 className={styles.sectionTitle}>Nhập văn bản muốn tóm tắt nha! 😄</h3>
+              <h3 className={styles.sectionTitle}>
+                Nhập văn bản muốn tóm tắt nha! 😄
+              </h3>
               <textarea
                 className={styles.textArea}
                 value={textInput}
@@ -543,7 +580,9 @@ const SummaryPage = () => {
               />
               <div className={styles.buttonRow}>
                 <button
-                  className={`${styles.submitButton} ${isLoading ? styles.loading : ""}`}
+                  className={`${styles.submitButton} ${
+                    isLoading ? styles.loading : ""
+                  }`}
                   onClick={handleTextSubmit}
                   disabled={!textInput.trim() || isLoading}
                 >
@@ -568,21 +607,28 @@ const SummaryPage = () => {
             <div className={styles.resultContainer}>
               {!showHistory ? (
                 <>
-                  <h3 className={styles.sectionTitle}>Kết quả tóm tắt đây nha! 🎉</h3>
+                  <h3 className={styles.sectionTitle}>
+                    Kết quả tóm tắt đây nha! 🎉
+                  </h3>
                   <div className={styles.resultBox}>
                     <p className={styles.resultText}>
-                      {selectedSummary || "Chưa có kết quả! Tóm tắt để xem nha! 😊"}
+                      {selectedSummary ||
+                        "Chưa có kết quả! Tóm tắt để xem nha! 😊"}
                     </p>
                   </div>
                   {summaries.length > 0 && (
                     <div className={styles.summaryOptionsContainer}>
-                      <h3 className={styles.sectionTitle}>Bản tóm tắt mới nhất 🌟</h3>
+                      <h3 className={styles.sectionTitle}>
+                        Bản tóm tắt mới nhất 🌟
+                      </h3>
                       <div className={styles.summaryOptions}>
                         {summaries.map((summary, index) => (
                           <div
                             key={index}
                             className={`${styles.summaryOption} ${
-                              selectedSummary === summary.content ? styles.selected : ""
+                              selectedSummary === summary.content
+                                ? styles.selected
+                                : ""
                             }`}
                             onClick={() => handleSelectSummary(summary)}
                           >
@@ -600,36 +646,51 @@ const SummaryPage = () => {
                 </>
               ) : (
                 <>
-                  <h3 className={styles.sectionTitle}>Lịch sử tóm tắt của phiên này! 🕒</h3>
+                  <h3 className={styles.sectionTitle}>
+                    Lịch sử tóm tắt của phiên này! 🕒
+                  </h3>
                   {currentSessionId ? (
                     historySummaries.length > 0 ? (
                       <div className={styles.historyContainer}>
                         <div className={styles.sessionGroup}>
                           <div className={styles.historyHeader}>
                             <p className={styles.historyTimestamp}>
-                              Phiên {currentSessionId} ({historySummaries[0].timestamp})
+                              Phiên {currentSessionId} (
+                              {historySummaries[0].timestamp})
                             </p>
                           </div>
                           {historySummaries.map((history) => (
-                            <div key={history.historyId} className={styles.historyItem}>
+                            <div
+                              key={history.historyId}
+                              className={styles.historyItem}
+                            >
                               <div className={styles.historySummaryOptions}>
                                 <div
                                   className={`${styles.summaryOption} ${
-                                    selectedSummary === history.content ? styles.selected : ""
+                                    selectedSummary === history.content
+                                      ? styles.selected
+                                      : ""
                                   }`}
-                                  onClick={() => handleSelectHistorySummary(history)}
+                                  onClick={() =>
+                                    handleSelectHistorySummary(history)
+                                  }
                                 >
                                   <p className={styles.summaryOptionTitle}>
-                                    Bản tóm tắt ({history.wordCount} từ) - {history.method} 📜
+                                    Bản tóm tắt ({history.wordCount} từ) -{" "}
+                                    {history.method} 📜
                                   </p>
-                                  <button className={styles.selectSummaryButton}>
+                                  <button
+                                    className={styles.selectSummaryButton}
+                                  >
                                     Chọn bản này! ✅
                                   </button>
                                 </div>
                               </div>
                               <button
                                 className={styles.deleteHistoryButton}
-                                onClick={() => handleDeleteHistorySummary(history.historyId)}
+                                onClick={() =>
+                                  handleDeleteHistorySummary(history.historyId)
+                                }
                                 title="Xóa lần tóm tắt này"
                               >
                                 <FaTrash />
@@ -652,13 +713,17 @@ const SummaryPage = () => {
               )}
               <div className={styles.tabButtons}>
                 <button
-                  className={`${styles.tabButton} ${!showHistory ? styles.activeTab : ""}`}
+                  className={`${styles.tabButton} ${
+                    !showHistory ? styles.activeTab : ""
+                  }`}
                   onClick={() => setShowHistory(false)}
                 >
                   Tóm tắt hiện tại 📝
                 </button>
                 <button
-                  className={`${styles.tabButton} ${showHistory ? styles.activeTab : ""}`}
+                  className={`${styles.tabButton} ${
+                    showHistory ? styles.activeTab : ""
+                  }`}
                   onClick={handleShowHistory}
                 >
                   Xem lịch sử 🕒
@@ -669,7 +734,11 @@ const SummaryPage = () => {
                   <button
                     className={styles.generateImageButton}
                     onClick={() => {
-                      if (window.confirm("Bạn muốn tạo hình ảnh bằng AI dựa trên bản tóm tắt này?")) {
+                      if (
+                        window.confirm(
+                          "Bạn muốn tạo hình ảnh bằng AI dựa trên bản tóm tắt này?"
+                        )
+                      ) {
                         generateImage();
                       }
                     }}
@@ -677,7 +746,10 @@ const SummaryPage = () => {
                   >
                     Tạo ảnh bằng AI 🎨
                   </button>
-                  <label htmlFor="image-upload" className={styles.uploadImageButton}>
+                  <label
+                    htmlFor="image-upload"
+                    className={styles.uploadImageButton}
+                  >
                     Upload hình ảnh 🖼️
                     <input
                       type="file"
@@ -703,16 +775,33 @@ const SummaryPage = () => {
           </div>
         </div>
 
+        {/* Section riêng cho EvaluationSection */}
+        {summaries.length > 0 && (
+          <section className={styles.evaluationSection}>
+            <EvaluationSection
+              originalText={textInput}
+              summaryText={selectedSummary}
+              method={selectedMethod}
+            />
+          </section>
+        )}
+
         {showModal && (
           <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
               <h3>Bạn muốn gửi duyệt bài đăng này à?</h3>
               <p>{modalSummary?.content}</p>
               <div className={styles.modalButtons}>
-                <button className={styles.modalCancelButton} onClick={() => setShowModal(false)}>
+                <button
+                  className={styles.modalCancelButton}
+                  onClick={() => setShowModal(false)}
+                >
                   Hủy
                 </button>
-                <button className={styles.modalSubmitButton} onClick={handleSubmitForReview}>
+                <button
+                  className={styles.modalSubmitButton}
+                  onClick={handleSubmitForReview}
+                >
                   Gửi duyệt
                 </button>
               </div>

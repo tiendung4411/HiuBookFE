@@ -1,6 +1,6 @@
 /* General Container */
 .container {
-  padding-top: 80px;
+  padding-top: 20px;
   min-height: 100vh;
   background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
   font-family: "Comic Sans MS", sans-serif;
@@ -69,33 +69,58 @@
 
 /* OptionButton */
 .optionButton {
-  background: #e0f7fa;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border: 2px solid #a3d4ff;
   padding: 15px 30px;
   border-radius: 30px;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
-  color: #333;
+  color: #1a5276;
   min-width: 120px;
   text-align: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.optionButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.optionButton:hover::before {
+  left: 100%;
 }
 
 .optionButton:hover {
-  background: #b3e5fc;
+  background: linear-gradient(145deg, #a9cce3, #d4e6f1);
   transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  animation: blink 0.5s infinite;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
+  color: #154360;
 }
 
 .optionButton.active {
-  background: linear-gradient(45deg, #ff6f61, #ff8a80);
-  border: 3px solid #ffd700;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  background: linear-gradient(45deg, #e74c3c, #f39c12);
+  border: 3px solid #f1c40f;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(241, 196, 15, 0.8);
   color: #fff;
   font-weight: bold;
   transform: scale(1.05);
@@ -127,7 +152,7 @@
 .grade3,
 .grade4,
 .grade5 {
-  background: #e0f7fa;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
 }
 
 /* Input and Result Section */
@@ -232,23 +257,49 @@
   padding: 15px 30px;
   font-size: 16px;
   font-weight: bold;
-  color: white;
-  background: linear-gradient(45deg, #0288d1, #4fc3f7);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border-radius: 30px;
   border: none;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
   animation: pulse 2s infinite;
 }
 
+.submitButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.submitButton:hover::before {
+  left: 100%;
+}
+
 .submitButton:hover {
-  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  background: linear-gradient(145deg, #3498db, #5dade2);
+  color: #fff;
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .submitButton:disabled {
-  background: #b0c4de;
+  background: #d5d8dc;
+  color: #7f8c8d;
   cursor: not-allowed;
   animation: none;
 }
@@ -257,41 +308,91 @@
 .uploadButton {
   padding: 15px 30px;
   font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #81d4fa, #b3e5fc);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border-radius: 30px;
   border: none;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
   animation: pulse 2s infinite;
 }
 
+.uploadButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.uploadButton:hover::before {
+  left: 100%;
+}
+
 .uploadButton:hover {
-  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  background: linear-gradient(145deg, #85c1e9, #aed6f1);
+  color: #fff;
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Reset Button */
 .resetButton {
   padding: 15px 30px;
   font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #ffab91, #ffccbc);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border-radius: 30px;
   border: none;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
   animation: pulse 2s infinite;
 }
 
+.resetButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.resetButton:hover::before {
+  left: 100%;
+}
+
 .resetButton:hover {
-  background: linear-gradient(45deg, #a5d6a7, #c8e6c9);
+  background: linear-gradient(145deg, #f1948a, #f5b7b1);
+  color: #fff;
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Image Action Buttons */
@@ -307,23 +408,49 @@
 .generateImageButton {
   padding: 15px 30px;
   font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #4fc3f7, #81d4fa);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border-radius: 30px;
   border: none;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
   animation: pulse 2s infinite;
 }
 
+.generateImageButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.generateImageButton:hover::before {
+  left: 100%;
+}
+
 .generateImageButton:hover {
-  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  background: linear-gradient(145deg, #5dade2, #85c1e9);
+  color: #fff;
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .generateImageButton:disabled {
-  background: #b0c4de;
+  background: #d5d8dc;
+  color: #7f8c8d;
   cursor: not-allowed;
   animation: none;
 }
@@ -331,22 +458,47 @@
 .uploadImageButton {
   padding: 15px 30px;
   font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #ffab91, #ffccbc);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border-radius: 30px;
   border: none;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
   animation: pulse 2s infinite;
 }
 
+.uploadImageButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.uploadImageButton:hover::before {
+  left: 100%;
+}
+
 .uploadImageButton:hover {
-  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  background: linear-gradient(145deg, #f5b7b1, #f9ebea);
+  color: #fff;
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* File Input (Hidden) */
@@ -401,26 +553,53 @@
 .tabButton {
   padding: 15px 30px;
   font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #81d4fa, #b3e5fc);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border: 2px solid #a3d4ff;
   border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
   animation: pulse 2s infinite;
 }
 
+.tabButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.tabButton:hover::before {
+  left: 100%;
+}
+
 .tabButton:hover {
-  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  background: linear-gradient(145deg, #85c1e9, #aed6f1);
+  color: #fff;
   transform: scale(1.05);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .tabButton.activeTab {
-  background: linear-gradient(45deg, #ff6f61, #ff8a80);
+  background: linear-gradient(45deg, #e74c3c, #f39c12);
   color: #fff;
-  border: 3px solid #ffd700;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  border: 3px solid #f1c40f;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(241, 196, 15, 0.8);
   animation: glow 1.2s infinite alternate;
 }
 
@@ -474,9 +653,9 @@
 }
 
 .summaryOption.selected {
-  background: linear-gradient(45deg, #ff6f61, #ff8a80);
-  border: 3px solid #ffd700;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  background: linear-gradient(45deg, #e74c3c, #f39c12);
+  border: 3px solid #f1c40f;
+  box-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
   color: #fff;
   font-weight: bold;
   transform: scale(1.05);
@@ -506,18 +685,44 @@
   padding: 8px 15px;
   font-size: 14px;
   font-weight: bold;
-  color: #fff;
-  background: linear-gradient(45deg, #2e7d32, #76ff03);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border-radius: 15px;
   border: none;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.selectSummaryButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.selectSummaryButton:hover::before {
+  left: 100%;
 }
 
 .selectSummaryButton:hover {
-  background: linear-gradient(45deg, #76ff03, #2e7d32);
+  background: linear-gradient(145deg, #27ae60, #52be80);
+  color: #fff;
   transform: scale(1.05);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* History Container */
@@ -559,7 +764,7 @@
 }
 
 .deleteHistoryButton {
-  background: linear-gradient(45deg, #ff7043, #ff9800);
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border: none;
   border-radius: 50%;
   width: 30px;
@@ -569,12 +774,37 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.deleteHistoryButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.deleteHistoryButton:hover::before {
+  left: 100%;
 }
 
 .deleteHistoryButton:hover {
-  background: linear-gradient(45deg, #ff9800, #ff7043);
+  background: linear-gradient(145deg, #e67e22, #f39c12);
   transform: scale(1.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Modal for History Submission */
@@ -624,33 +854,87 @@
 .modalCancelButton {
   padding: 10px 20px;
   font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #ff7043, #ff9800);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border-radius: 15px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.modalCancelButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.modalCancelButton:hover::before {
+  left: 100%;
 }
 
 .modalCancelButton:hover {
-  background: linear-gradient(45deg, #ff9800, #ff7043);
+  background: linear-gradient(145deg, #e67e22, #f39c12);
+  color: #fff;
   transform: scale(1.05);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .modalSubmitButton {
   padding: 10px 20px;
   font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #2e7d32, #76ff03);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border-radius: 15px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.modalSubmitButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.modalSubmitButton:hover::before {
+  left: 100%;
 }
 
 .modalSubmitButton:hover {
-  background: linear-gradient(45deg, #76ff03, #2e7d32);
+  background: linear-gradient(145deg, #27ae60, #52be80);
+  color: #fff;
   transform: scale(1.05);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Animations */
@@ -774,7 +1058,7 @@
 .guideStepCharacter {
   width: clamp(80px, 15vw, 120px);
   height: clamp(80px, 15vw, 120px);
-  animation: bounce 1s infinite;
+  animation: bounce bounce 1s infinite;
 }
 
 .guideStepMessage {
@@ -806,7 +1090,8 @@
   padding: 12px 25px;
   font-size: clamp(1rem, 2.5vw, 1.2rem);
   font-weight: bold;
-  color: #fff;
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border: none;
   border-radius: 15px;
   cursor: pointer;
@@ -814,26 +1099,49 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
   animation: bounceIn 0.5s ease-out;
 }
 
-.skipButton {
-  background: linear-gradient(45deg, #ff9800, #ff7043);
+.skipButton::before,
+.nextButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.skipButton:hover::before,
+.nextButton:hover::before {
+  left: 100%;
 }
 
 .skipButton:hover {
-  background: linear-gradient(45deg, #ff7043, #ff9800);
+  background: linear-gradient(145deg, #e67e22, #f39c12);
+  color: #fff;
   transform: scale(1.05);
-}
-
-.nextButton {
-  background: linear-gradient(45deg, #2e7d32, #76ff03);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .nextButton:hover {
-  background: linear-gradient(45deg, #76ff03, #2e7d32);
+  background: linear-gradient(145deg, #27ae60, #52be80);
+  color: #fff;
   transform: scale(1.05);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Nút "Xem lại hướng dẫn" */
@@ -841,8 +1149,8 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: linear-gradient(45deg, #81d4fa, #b3e5fc);
-  color: #fff;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
+  color: #1a5276;
   border: none;
   border-radius: 50%;
   width: 40px;
@@ -852,14 +1160,39 @@
   line-height: 40px;
   text-align: center;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
   z-index: 1000;
 }
 
+.showGuideButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.showGuideButton:hover::before {
+  left: 100%;
+}
+
 .showGuideButton:hover {
-  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  background: linear-gradient(145deg, #85c1e9, #aed6f1);
+  color: #fff;
   transform: scale(1.1) rotate(360deg);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 6px 12px rgba(0, 0, 0, 0.25);
 }
 
 /* Cập nhật CSS cho overlay loading mới (sử dụng ClipLoader từ react-spinners) */
@@ -940,19 +1273,45 @@
 .publishButton {
   padding: 15px 30px;
   font-size: 16px;
-  color: white;
-  background: linear-gradient(45deg, #ff4081, #f06292);
+  color: #1a5276;
+  background: linear-gradient(145deg, #e6eef5, #ffffff);
   border: 2px solid #a3d4ff;
   border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
   animation: pulse 2s infinite;
 }
 
+.publishButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: all 0.5s;
+}
+
+.publishButton:hover::before {
+  left: 100%;
+}
+
 .publishButton:hover {
-  background: linear-gradient(45deg, #ffeb3b, #fff176);
+  background: linear-gradient(145deg, #ec407a, #f06292);
+  color: #fff;
   transform: scale(1.05);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8),
+    0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Responsive Design */
@@ -1186,6 +1545,7 @@
     font-size: 12px;
   }
 }
+
 /* Container for title suggestions */
 .titleSuggestions {
   margin-top: 10px;
@@ -1235,5 +1595,75 @@
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+/*component evluationsection */
+/* Evaluation Section */
+.evaluationSection {
+  width: 100%;
+  max-width: 1400px;
+  margin-top: 20px;
+  padding: 20px;
+  background: #f0faff;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid #a3d4ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.evaluationContainer {
+  width: 100%;
+  padding: 15px;
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.chartBox {
+  background: white;
+  padding: 10px;
+  border-radius: 15px;
+  border: 2px solid #a3d4ff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  height: 300px; /* Đặt chiều cao cố định để đồng bộ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .evaluationSection {
+    padding: 15px;
+  }
+
+  .chartGrid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+  }
+
+  .chartBox {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .evaluationSection {
+    padding: 10px;
+  }
+
+  .chartGrid {
+    grid-template-columns: 1fr; /* Chỉ 1 cột trên màn hình nhỏ */
+    gap: 10px;
+  }
+
+  .chartBox {
+    height: 200px;
   }
 }

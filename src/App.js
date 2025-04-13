@@ -5,12 +5,14 @@ import DualViewLayout from "./pages/DualViewLayout";
 import RegisterPage from "./pages/RegisterPage";
 import SummaryPage from "./pages/SummaryPage";
 import ReadingListPage from "./pages/ReadingListPage";
-import MindmapPage from "./pages/MindmapPage"; // Thêm MindmapPage
+import MindmapPage from "./pages/MindmapPage";
+import StoryWorkshopPage from "./pages/StoryWorkshopPage"; // Thêm StoryWorkshopPage
 import AdminDashboard from "./Admin/pages/AdminDashboard.js";
 import UserManagement from "./Admin/pages/UserManagement.js";
 import SummaryManagement from "./Admin/pages/SummaryManagement.js";
 import StoryManagement from "./Admin/pages/StoryManagement.js";
 import ProfilePage from "./pages/ProfilePage";
+
 // Tách biệt các route không phải admin
 const nonAdminRoutes = [
   { path: "/", element: <HomeScreen /> },
@@ -21,7 +23,8 @@ const nonAdminRoutes = [
   { path: "/reading-list/:classLevel", element: <ReadingListPage /> },
   { path: "/story/:id", element: <DualViewLayout /> },
   { path: "/profile", element: <ProfilePage /> },
-  { path: "/mindmap", element: <MindmapPage /> } // Thêm route mindmap
+  { path: "/mindmap", element: <MindmapPage /> },
+  { path: "/story-workshop", element: <StoryWorkshopPage /> } // Thêm route cho StoryWorkshopPage
 ];
 
 // Tách biệt các route dành cho admin
